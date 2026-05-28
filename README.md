@@ -1,4 +1,4 @@
-# AWS 3-Tier Architecture & Automated Configuration via Ansible
+# AWS 3-Tier Architecture & Automated Configuration via Ansible (with mock secrets and ips)
 
 ## Overview
 Infrastructure as Code (IaC) configuration for a 3-Tier web architecture deployed on AWS. All OS-level configuration, software installation and application deployment are fully automated using Ansible modular roles.
@@ -16,9 +16,12 @@ Built on strict segmentation and Zero-Trust within a custom Virtual Private Clou
 
 ## Prerequisites & Execution
 1. Ensure all EC2 instances use the same `.pem` SSH keypair.
-2. Copy `hosts.ini.example` to `hosts.ini`. Input your AWS IPs and the path to your local `.pem` key.
-3. Copy `group_vars/secrets.yml.example` to `group_vars/secrets.yml`, add your password and if you want you can encrypt it: `ansible-vault encrypt group_vars/secrets.yml`.
-4. Execute the master playbook:
+2. Copy `hosts.ini.mock` to `hosts.ini`. Input your AWS IPs and the path to your local `.pem` key.
+3. Copy `group_vars/secrets.yml.mock` to `group_vars/secrets.yml`, add your password and if you want you can encrypt it: `ansible-vault encrypt group_vars/secrets.yml`.
+4. Copy `ansible.cfg.mock` to `ansible.cfg`with your settings.
+5. Execute the master playbook:
 
 ```bash
-ansible-playbook -i hosts.ini site.yml --ask-vault-pass
+ansible-playbook site.yml --ask-vault-pass
+```
+
