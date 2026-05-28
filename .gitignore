@@ -1,0 +1,7 @@
+hosts.ini
+group_vars/
+*.pem
+*.retry
+.ansible/
+roles/*/tasks/main.yml
+

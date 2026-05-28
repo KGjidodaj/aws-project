@@ -1,0 +1,21 @@
+---
+- name: 1. Downloading Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: yes
+- name: 2. Setting up nginx as a reverse proxy
+  ansible.builtin.copy:
+    dest: /etc/nginx/sites-available/default
+    content: |
+      server {
+        listen 80;
+        location / {
+          proxy_pass http://{{ groups['app'][0] }}:8080;
+        }
+      }
+- name: 3. Nginx restart
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

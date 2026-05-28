@@ -1,0 +1,18 @@
+---
+- name: Configuring the public reverse proxy
+  hosts: proxy
+  become: true
+  roles:
+    - nginx
+- name: Configuring the internal application server
+  hosts: app
+  become: true
+  roles:
+    - internal_app
+- name: Configuring the private database
+  hosts: db
+  become: true
+  vars_files:
+    - group_vars/secrets.yml
+  roles:
+    - mysql_db

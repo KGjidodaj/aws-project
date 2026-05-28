@@ -1,0 +1,25 @@
+---
+- name: 1. Installing python and mysql
+  ansible.builtin.apt:
+    name:
+      - mysql-server
+      - python3-pymysql
+    state: present
+    update_cache: yes
+- name: 2. changing bind address
+  ansible.builtin.lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+- name: 3. restarting mysql
+  ansible.builtin.systemd:
+    name: mysql
+    state: restarted
+    enabled: yes
+- name: 4. Creating DB
+  ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS homelab_db;"
+- name: 5. Creating user
+  ansible.builtin.command: >
+    mysql -e "CREATE USER IF NOT EXISTS 'homelab_user'@'%' IDENTIFIED BY '{{ db_root_password }}';
+    GRANT ALL PRIVILEGES ON homelab_db.* TO 'homelab_user'@'%';
+    FLUSH PRIVILEGES;"
