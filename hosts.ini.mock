@@ -1,8 +1,15 @@
 [proxy]
-(nginx public ip) ansible_user=ubuntu ansible_ssh_private_key_file=/route to repo/aws-project/key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+51.21.197.130
 
 [app]
-(app private ip) ansible_user=ubuntu ansible_ssh_private_key_file=/route to repo/aws-project/key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q ubuntu@(nginx public ip) -i /route to repo/aws-project/key.pem -o StrictHostKeyChecking=no"'
+10.0.23.96
 
 [db]
-(DB private ip) ansible_user=ubuntu ansible_ssh_private_key_file=/route to repo/aws-project/key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q ubuntu@(nginx public ip) -i /route to repo/aws-project/key.pem -o StrictHostKeyChecking=no"'
+10.0.21.88
+
+[private_servers:children]
+app
+db
+
+[private_servers:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@51.21.197.130 -i /home/kris/aws-project/key.pem -o StrictHostKeyChecking=no"'

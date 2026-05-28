@@ -7,6 +7,8 @@
 - name: Configuring the internal application server
   hosts: app
   become: true
+  vars_files:
+    - group_vars/secrets.yml
   roles:
     - internal_app
 - name: Configuring the private database
