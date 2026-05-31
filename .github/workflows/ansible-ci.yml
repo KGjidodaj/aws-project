@@ -14,7 +14,7 @@ jobs:
           sudo apt-get install -y ansible
       - name: Creating dummy secrets file
         run: |
-          mkdir -p groups_vars
+          mkdir -p group_vars
           echo "db_root_password: dummy_pass" > group_vars/secrets.yml
       - name: Run Ansible Syntax Check
         run: ansible-playbook site.yml --syntax-check
