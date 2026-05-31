@@ -1,0 +1,20 @@
+name: Ansible CI
+on:
+  push:
+    branches: ["main"]
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Installing Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+      - name: Creating dummy secrets file
+        run: |
+          mkdir -p groups_vars
+          echo "db_root_password: dummy_pass" > group_vars/secrets.yml
+      - name: Run Ansible Syntax Check
+        run: ansible-playbook site.yml --syntax-check
