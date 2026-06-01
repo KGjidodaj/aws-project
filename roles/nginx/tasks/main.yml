@@ -14,8 +14,4 @@
           proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:8080;
         }
       }
-- name: 3. Nginx restart
-  ansible.builtin.systemd:
-    name: nginx
-    state: restarted
-    enabled: yes
+    notify: Restart Nginx

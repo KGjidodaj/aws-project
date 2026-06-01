@@ -1,0 +1,5 @@
+---
+- name: Restart PM2 Application
+  ansible.builtin.command: pm2 restart app.js
+  args:
+    chdir: /home/ubuntu/app

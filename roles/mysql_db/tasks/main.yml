@@ -11,11 +11,7 @@
     path: /etc/mysql/mysql.conf.d/mysqld.cnf
     regexp: '^bind-address'
     line: 'bind-address = 0.0.0.0'
-- name: 3. restarting mysql
-  ansible.builtin.systemd:
-    name: mysql
-    state: restarted
-    enabled: yes
+    notify: Restart mysql
 - name: 4. Creating DB
   ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS homelab_db;"
 - name: 5. Creating user
