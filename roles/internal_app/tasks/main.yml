@@ -60,7 +60,7 @@
       app.listen(port, '0.0.0.0', () => {
           console.log(`App listening on port ${port}`);
       });
-    notify: Restart PM2 Application
+  notify: Restart PM2 Application
 - name: 8. Start the application with PM2
   ansible.builtin.command: pm2 start app.js -f
   args:
