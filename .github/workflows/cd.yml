@@ -1,0 +1,36 @@
+name: Ansible Continuous Deployment
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+      - name: Provision AWS SSH key & Directory setup
+        run: |
+          echo "${{ secrets.AWS_SSH_KEY }}" > ./aws-homelab.pem
+          chmod 600 ./aws-homelab.pem
+          mkdir -p ./group_vars
+      - name: Place variables into group_vars/all.yml
+        run: |
+          # Using EOF to replace any secret used at once
+          cat <<EOF > group_vars/all.yml
+          nginx_ip: "${{ secrets.NGINX_IP }}"
+          app_ip: "${{ secrets.APP_IP }}"
+          db_ip: "${{ secrets.DB_IP }}"
+          key_location: "./aws-homelab.pem"
+          db_root_password: "${{ secrets.DB_PASSWORD }}"
+          ansible_ssh_private_key_file: "./aws-homelab.pem"
+          EOF
+      - name: Execute Ansible Deployment
+        run: ansible-playbook site.yml
+        env:
+          # Avoiding potential pauses for confirmation
+          ANSIBLE_HOST_KEY_CHECKING: "False"
