@@ -8,13 +8,13 @@
   hosts: app
   become: true
   vars_files:
-    - group_vars/secrets.yml
+    - group_vars/all.yml
   roles:
     - internal_app
 - name: Configuring the private database
   hosts: db
   become: true
   vars_files:
-    - group_vars/secrets.yml
+    - group_vars/all.yml
   roles:
     - mysql_db
