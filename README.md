@@ -1,3 +1,4 @@
+[![Ansible Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
 # AWS 3-Tier Architecture & Automated Configuration via Ansible (with mock secrets and ips)
 
 ## Overview
