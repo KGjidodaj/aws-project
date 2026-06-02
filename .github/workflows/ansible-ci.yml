@@ -17,6 +17,6 @@ jobs:
         run: |
           mkdir -p group_vars
           echo "db_root_password: dummy_pass" > group_vars/secrets.yml
-          echo "vault_pass: dummy_pass_again: > ./.vault_pass
+          echo "vault_pass: dummy_pass_again:" > ./.vault_pass
       - name: Run Ansible Syntax Check
         run: ansible-playbook site.yml --syntax-check
