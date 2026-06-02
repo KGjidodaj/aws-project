@@ -1,4 +1,5 @@
-group_vars/
+inventory/group_vars/
 *.pem
 *.retry
 .ansible/
+.vault_pass

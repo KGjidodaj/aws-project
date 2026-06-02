@@ -5,13 +5,7 @@
     state: present
     update_cache: yes
 - name: 2. Setting up nginx as a reverse proxy
-  ansible.builtin.copy:
-    dest: /etc/nginx/sites-available/default
-    content: |
-      server {
-        listen 80;
-        location / {
-          proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:8080;
-        }
-      }
-    notify: Restart Nginx
+  ansible.builtin.template:
+    src: default.conf.j2
+    dest: /etc/nginx/sites-available/defaults
+  notify: Restart Nginx
