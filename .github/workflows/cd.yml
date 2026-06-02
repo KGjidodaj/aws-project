@@ -18,11 +18,11 @@ jobs:
         run: |
           echo "${{ secrets.AWS_SSH_KEY }}" > ./aws-homelab.pem
           chmod 600 ./aws-homelab.pem
-          mkdir -p ./group_vars
+          mkdir -p ./inventory/group_vars
       - name: Place variables into group_vars/all.yml
         run: |
           # Using EOF to replace any secret used at once
-          cat <<EOF > group_vars/all.yml
+          cat <<EOF > ./inventory/group_vars/all.yml
           nginx_ip: "${{ secrets.NGINX_IP }}"
           app_ip: "${{ secrets.APP_IP }}"
           db_ip: "${{ secrets.DB_IP }}"
