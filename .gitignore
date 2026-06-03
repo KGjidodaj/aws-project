@@ -1,5 +1,20 @@
+# Ansible part
 inventory/group_vars/
 *.pem
 *.retry
 .ansible/
 .vault_pass
+
+# Terraform part
+**/.*
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
