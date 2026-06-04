@@ -1,4 +1,4 @@
-
+# Setting up the network infrastructure ----
 #Defining the VPC
 resource "aws_vpc" "main_network" {
   cidr_block = "10.0.0.0/16"
@@ -47,7 +47,7 @@ resource "aws_route_table_association" "public_rt_assoc" {
   route_table_id = aws_route_table.public_rt.id
 }
 
-#Security Groups Part:
+#Security Groups Part ----
 #Nginx SG
 resource "aws_security_group" "nginx_bastion_sg" {
   name        = "nginx-bastion-sg"
@@ -96,3 +96,73 @@ resource "aws_security_group" "internal_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+#Configuring EC2 Instances ----
+#Ubuntu ami (for the EC2 instances)
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+#Nginx instance
+resource "aws_instance" "nginx_server" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.nginx_bastion_sg.id]
+  root_block_device {
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name = "AWS-project-Nginx"
+  }
+}
+
+#Node.js app instance
+resource "aws_instance" "app_server" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.internal_sg.id]
+  root_block_device {
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name = "AWS-project-App-Node"
+  }
+}
+
+#Mysql Instance
+resource "aws_instance" "nodejs_server" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.internal_sg.id]
+  root_block_device {
+    volume_size = 8
+    volume_type = "gp3"
+  }
+  tags = {
+    Name = "AWS-project-Mysql"
+  }
+}
+
+
+
+
+
+
+
