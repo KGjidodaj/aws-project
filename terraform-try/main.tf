@@ -1,4 +1,17 @@
 # Setting up the network infrastructure ----
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~> 6.0" #limiting to major 6.x releases
+    }
+  }
+}
+
+provider "aws" {
+  region = "eu-north-1"
+}
+
 #Defining the VPC
 resource "aws_vpc" "main_network" {
   cidr_block = "10.0.0.0/16"
@@ -7,6 +20,10 @@ resource "aws_vpc" "main_network" {
   enable_dns_hostnames = true
   tags = {
     Name = "AWS-project-VPC"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  tags = {
+  Name = "AWS-project-VPC"
   }
 }
 
@@ -15,6 +32,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_network.id
   tags = {
     Name = "AWS-project-IGW"
+  Name = "AWS-project-IGW"
   }
 }
 
@@ -23,6 +41,9 @@ resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.main_network.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-north-1a"
+  vpc_id = aws_vpc.main_network.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "eu-north-1a"
   map_public_ip_on_launch = true #Gives all IPs automatically
   tags = {
     Name = "AWS-project-Public-Subnet"
@@ -58,6 +79,21 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
+  subnet_id = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+#Security Groups Part:
+#Nginx SG
+resource "aws_security_group" "nginx_bastion_sg" {
+  name = "nginx-bastion-sg"
+  description = "Allow inbound HTTP/HTTPS and SSH from anywhere"
+  vpc_id = aws_vpc.main_network.id
+  ingress {
+    description = "HTTP from Internet"
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -65,6 +101,9 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
@@ -72,6 +111,9 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"] #using 0.0.0.0/0 for now
   }
 }
@@ -86,6 +128,14 @@ resource "aws_security_group" "internal_sg" {
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
+  name = "internal-app-db-sg"
+  description = "Allow inbound traddic only from Nginc bastion SG"
+  vpc_id = aws_vpc.main_network.id
+  ingress {
+    description = "Allow all traffic from bastion host"
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
     security_groups = [aws_security_group.nginx_bastion_sg.id]
   }
   egress {
@@ -166,3 +216,9 @@ resource "aws_instance" "nodejs_server" {
 
 
 
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
