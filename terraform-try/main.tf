@@ -126,7 +126,13 @@ resource "aws_instance" "nginx_server" {
     Name = "AWS-project-Nginx"
   }
 }
-
+resource "aws_eip" "nginx_eip" {
+  instance = aws_instance.nginx_server.id
+  domain   = "vpc"
+  tags = {
+    Name = "AWS-project-nginx-EIP"
+  }
+}
 #Node.js app instance
 resource "aws_instance" "app_server" {
   ami                    = data.aws_ami.ubuntu.id
