@@ -1,5 +1,9 @@
+[![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
 [![Ansible-Terraform Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
 
+[![Terraform Version](https://img.shields.io/badge/Terraform-1.15+-623CE4?logo=terraform)](https://www.terraform.io/)
+[![Ansible Automated](https://img.shields.io/badge/Ansible-Deployed-EE0000?logo=ansible)](https://www.ansible.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Enterprise AWS 3-Tier Architecture (IaC & CI/CD)
 
 ## Overview

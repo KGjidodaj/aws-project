@@ -9,8 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+      - name: Create dummy pass
+        run: echo "dummy pass" > ./.vault_pass
       - name: Ansible syntax check
         run: ansible-playbook site.yml --syntax-check
+
       - name: Terraform init and validate check
         working-directory: ./terraform-try # for the command to work
         run: terraform init -backend=false && terraform validate #without backend connection as no credentials have been given yet
@@ -33,7 +44,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
 
-      - name: Install Ansible and init Terraform
+      - name: Install Ansible
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
