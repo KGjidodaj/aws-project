@@ -11,14 +11,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install Ansible and Terraform setup-init
-        uses: hashicorp/setup-terraform@v4
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-          terraform init
-          terraform apply -auto-approve
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -26,6 +18,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Install Ansible and init Terraform
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          terraform init
+          terraform apply -auto-approve
 
       - name: Provision AWS SSH key, Directory and password setup
         run: |
@@ -44,7 +46,7 @@ jobs:
           echo "::add-mask::$NGINX_IP"
           echo "::add-mask::$APP_IP"
           echo "::add-mask::$DB_IP"
-          echo "NGINX_IP=$BASTION_IP" >> $GITHUB_ENV
+          echo "BASTION_IP=$NGINX_IP" >> $GITHUB_ENV
           echo "APP_IP=$APP_IP" >> $GITHUB_ENV
           echo "DB_IP=$DB_IP" >> $GITHUB_ENV
 
