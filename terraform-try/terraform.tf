@@ -6,14 +6,16 @@ terraform {
     }
   }
   required_version = ">= 1.15"
+  backend "s3" {
+    bucket = "aws-project-kris-2026"
+    key    = "aws-project/terraform.tfstate"
+    region = "eu-north-1"
+  }
+
+
 }
 
 provider "aws" {
   region = "eu-north-1"
 }
 
-backend "s3" {
-  bucket = "aws-project-kris-2026"
-  key = "aws-project/terraform.tfstate"
-  region = "eu-north-1"
-}

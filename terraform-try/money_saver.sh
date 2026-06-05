@@ -30,10 +30,10 @@ if terraform apply; then
         cd ..
         echo "Running ansible-playbook..."
         ansible-playbook site.yml
+        cd terraform-try
     fi
 
     read -p "Pausing the script before destruction, when you want to continue!"
-    cd /terraform-try
     echo "Starting the teardown process with terraform destroy----------."
     sleep 0.5
 
