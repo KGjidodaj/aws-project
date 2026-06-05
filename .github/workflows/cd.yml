@@ -4,6 +4,17 @@ on:
   push:
     branches: ["main"]
 jobs:
+  integration-checks:
+    name: Syntax and Security checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Ansible syntax check
+        run: ansible-playbook site.yml --syntax-check
+      - name: Terraform init and validate check
+        working-directory: ./terraform-try # for the command to work
+        run: terraform init -backend=false && terraform validate #without backend connection as no credentials have been given yet
+
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
