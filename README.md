@@ -33,9 +33,8 @@ The End-to-End lifecycle relies on a unified pipeline architecture (`cd.yml`). I
 4. **Infrastructure Deployment:** `terraform apply` builds the cloud infrastructure and utilizes a remote AWS S3 Backend for State management.
 5. **OPSEC Log Securing:** Real-time IP extraction and masking (`::add-mask::`). Preventing infrastructure leakage in public action logs.
 6. **Configuration Delivery:** Dynamic IP insertion to `group_vars/all.yml` on the runner. Followed by the execution of `ansible-playbook`.
-7. 
 ## Local Testing & Cost Management
-For manual testing without triggering the CI/CD pipeline, this repository includes a custom interactive wrapper script (`money_saver.sh`). Executing this script will automatically validate, format and apply the Terraform configuration. It then pauses execution allowing the user to manually trigger the Ansible deployment. Then safely destroying all resources (`terraform destroy`) to ensure reduced AWS costs.
+For manual testing without triggering the CI/CD pipeline, this repository includes a custom interactive wrapper script (`money_saver.sh`). Executing this script will automatically (with approval for safety) validate, format and apply the Terraform configuration. It then pauses execution allowing the user to manually trigger the Ansible deployment. Then safely destroying all resources (`terraform destroy`) to ensure reduced AWS costs. Also set your ssh (key).pem file in the ./aws-homelab.pem for ansible usage.
 
 ## Reproducibility
 *Note: This is an automated CI/CD repository. Manual execution may cause errors.*

@@ -27,6 +27,24 @@ if terraform apply; then
     read -p "Would you like to continue with Ansible deployment before destruction(yes/no):" ansible
 
     if [[ $ansible == "Yes" ]] || [[ $ansible == "yes" ]];then
+
+        # Outputting the raw ips and saving in the all.yml file like in the pipeline for dynamic IP usage.
+        echo "Extracting IPs for local ansible-playbook usage"
+        NGINX_IP=$(terraform output -raw nginx_public_ip)
+        APP_IP=$(terraform output -raw app_private_ip)
+        DB_IP=$(terraform output -raw mysql_private_ip)
+
+        mkdir -p ../inventory/group_vars > /dev/null 2>&1
+        echo "[*] Injecting IPs into Ansible configuration..."
+        cat <<EOF > ../inventory/group_vars/all.yml
+        nginx_ip: "${NGINX_IP}"
+        app_ip: "${APP_IP}"
+        db_ip: "${DB_IP}"
+        key_location: "./aws-homelab.pem"
+        db_root_password: "local_testing_password"
+        ansible_ssh_private_key_file: "./aws-homelab.pem"
+        EOF
+
         cd ..
         echo "Running ansible-playbook..."
         ansible-playbook site.yml
