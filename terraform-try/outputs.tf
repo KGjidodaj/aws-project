@@ -8,6 +8,6 @@ output "app_private_ip" {
 }
 output "mysql_private_ip" {
   description = "Getting the private ip od the mysql DB"
-  value       = aws_instance.nodejs_server.private_ip
+  value       = aws_instance.mysql_server.private_ip
 }
 
