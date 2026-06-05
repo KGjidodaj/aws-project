@@ -26,8 +26,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
-          terraform init
-          terraform apply -auto-approve
 
       - name: Provision AWS SSH key, Directory and password setup
         run: |
@@ -35,6 +33,13 @@ jobs:
           chmod 600 ./aws-homelab.pem
           mkdir -p ./inventory/group_vars
           echo "${{ secrets.VAULT_PASS }}" > ./.vault_pass
+
+      - name: Terraform initialization and application
+        working-directory: ./terraform-try
+        run: |
+          terraform init
+          terraform plan # Because apply is hidden to a terr.log to prevent ip leakage
+          terraform apply -auto-approve > terr.log
 
       - name: Extract IPs and mask logs
         #Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
