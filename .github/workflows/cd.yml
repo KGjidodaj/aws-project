@@ -1,5 +1,5 @@
 ---
-name: Ansible Continuous Deployment
+name: Ansible-Terraform Continuous Deployment
 on:
   push:
     branches: ["main"]
@@ -10,27 +10,55 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Install Ansible
+
+      - name: Install Ansible and Terraform setup-init
+        uses: hashicorp/setup-terraform@v4
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          #Using the github secrets
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - name: Provision AWS SSH key, Directory and password setup
         run: |
           echo "${{ secrets.AWS_SSH_KEY }}" > ./aws-homelab.pem
           chmod 600 ./aws-homelab.pem
           mkdir -p ./inventory/group_vars
           echo "${{ secrets.VAULT_PASS }}" > ./.vault_pass
+
+      - name: Extract IPs and mask logs
+        #Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
+        working-directory: ./terraform-try
+        run: |
+          NGINX_IP=$(terraform output -raw nginx_public_ip)
+          APP_IP=$(terraform output -raw app_private_ip)
+          DB_IP=$(terraform output -raw mysql_private_ip)
+          echo "::add-mask::$NGINX_IP"
+          echo "::add-mask::$APP_IP"
+          echo "::add-mask::$DB_IP"
+          echo "NGINX_IP=$BASTION_IP" >> $GITHUB_ENV
+          echo "APP_IP=$APP_IP" >> $GITHUB_ENV
+          echo "DB_IP=$DB_IP" >> $GITHUB_ENV
+
       - name: Place variables into group_vars/all.yml
         run: |
-          # Using EOF to replace any secret used at once
           cat <<EOF > ./inventory/group_vars/all.yml
-          nginx_ip: "${{ secrets.NGINX_IP }}"
-          app_ip: "${{ secrets.APP_IP }}"
-          db_ip: "${{ secrets.DB_IP }}"
+          nginx_ip: "${BASTION_IP}"
+          app_ip: "${APP_IP}"
+          db_ip: "${DB_IP}"
           key_location: "./aws-homelab.pem"
           db_root_password: "${{ secrets.DB_PASSWORD }}"
           ansible_ssh_private_key_file: "./aws-homelab.pem"
           EOF
+
       - name: Execute Ansible Deployment
         run: ansible-playbook site.yml
         env:
