@@ -31,6 +31,7 @@ jobs:
         with:
           working_directory: ./terraform-try
           soft_fail: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
