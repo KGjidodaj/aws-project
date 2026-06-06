@@ -1,28 +1,46 @@
-[![Ansible Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
-# AWS 3-Tier Architecture & Automated Configuration via Ansible (with mock secrets and ips)
+[![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
+[![Ansible-Terraform Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
+
+[![Terraform Version](https://img.shields.io/badge/Terraform-1.15+-623CE4?logo=terraform)](https://www.terraform.io/)
+[![Ansible Automated](https://img.shields.io/badge/Ansible-Deployed-EE0000?logo=ansible)](https://www.ansible.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# Enterprise AWS 3-Tier Architecture (IaC & CI/CD)
 
 ## Overview
-Infrastructure as Code (IaC) configuration for a 3-Tier web architecture deployed on AWS. All OS-level configuration, software installation and application deployment are fully automated using Ansible modular roles.
+This repository deploys and configures an AWS cloud infrastructure utilizing **Infrastructure as Code (IaC)** and automated **Configuration Management**. The entire lifecycle is fully automated via GitHub Actions, leaving no static IPs or hardcoded secrets in the repository.
 
-## Architecture & Network Flow
-Built on strict segmentation and Zero-Trust within a custom Virtual Private Cloud (VPC):
-* **Tier 1 (Public Proxy):** Nginx in a Public Subnet. The only server with a Public IP. Routes HTTP/HTTPS traffic to the internal network.
-* **Tier 2 (App Layer):** Node.js API (managed by PM2) in a Private Subnet. Accepts traffic *only* from the Tier 1 Security Group.
-* **Tier 3 (Database):** MySQL hosted in a Private Subnet. Network flow and data queries are explicitly managed through AWS Route Tables and Nginx proxy routing.
+## Architecture & Network Topology
+The underlying hardware and L3/L4 network are managed by **Terraform**. It constructs a 3-tier Virtual Private Cloud (VPC) implementing Network Isolation:
 
-## Ansible Automation
-* **SSH ProxyJump (Bastion Host):** Uses Tier 1 as a secure tunnel to configure the private servers (Tiers 2 & 3) without exposing them to the internet.
-* **Modular Roles:** Idempotent deployment using specific roles (`nginx_proxy`, `internal_app`, `mysql_db`).
-* **Ansible Vault:** Database credentials are encrypted locally and injected dynamically during execution.
+* **Tier 1 (Public Bastion/Proxy):** Nginx hosted in a Public Subnet with a dedicated Elastic IP. It acts as the ingress controller and the only entry point from the public internet.
+* **Tier 2 (Application Layer):** Node.js API hosted in a **Private Subnet**. Accepts traffic strictly from the Tier 1 Security Group.
+* **Tier 3 (Database Layer):** MySQL hosted in a **Private Subnet**. Accepts traffic strictly from the Tier 1 Security Group.
+* **Egress Routing:** A **NAT Gateway** is deployed in the Public Subnet to allow outbound internet access for the Private nodes without exposing them to inbound threats.
 
-## Prerequisites & Execution
-1. Ensure all EC2 instances use the same `.pem` SSH keypair.
-2. Copy `hosts.ini.mock` to `hosts.ini`. Input your AWS IPs and the path to your local `.pem` key.
-3. Copy `group_vars/secrets.yml.mock` to `group_vars/secrets.yml`, add your password and if you want you can encrypt it: `ansible-vault encrypt group_vars/secrets.yml`.
-4. Copy `ansible.cfg.mock` to `ansible.cfg`with your settings.
-5. Execute the master playbook:
+## Configuration Management & Deployment
+Operating system configuration and application deployment are handled by **Ansible**. Structured in idempotent modular roles (`nginx_proxy`, `internal_app`, `mysql_db`).
 
-```bash
-ansible-playbook site.yml --ask-vault-pass
-```
+* **Dynamic Temporary Inventory:** IP addresses are extracted dynamically from Terraform state during the CI/CD run.
+* **Zero-Trust SSH Tunneling:** Ansible utilizes an SSH `ProxyCommand` to jump through the Nginx Bastion host to configure the private servers. Ensuring the DB and App layers are never exposed.
+* **Secret Management:** No secrets or vault passwords are stored in the repository. Database passwords and SSH keys are securely added into the runner memory during runtime via GitHub Secrets.
 
+## CI/CD Pipeline (GitHub Actions)
+The End-to-End lifecycle relies on a unified pipeline architecture (`cd.yml`). It enforces Continuous Integration (CI) gates before initiating Continuous Deployment (CD):
+
+1. **CI / Quality Gates:** Triggers syntax checks, Ansible linting, and Terraform validation.
+2. **Deployment Blocker (`needs` directive):** The CD phase is strictly blocked and will abort if any CI quality gate fails, preventing broken code from reaching the infrastructure.
+3. **AWS Authentication:** Secure login using IAM keys.
+4. **Infrastructure Deployment:** `terraform apply` builds the cloud infrastructure and utilizes a remote AWS S3 Backend for State management.
+5. **OPSEC Log Securing:** Real-time IP extraction and masking (`::add-mask::`). Preventing infrastructure leakage in public action logs.
+6. **Configuration Delivery:** Dynamic IP insertion to `group_vars/all.yml` on the runner. Followed by the execution of `ansible-playbook`.
+## Local Testing & Cost Management
+For manual testing without triggering the CI/CD pipeline, this repository includes a custom interactive wrapper script (`money_saver.sh`). Executing this script will automatically (with approval for safety) validate, format and apply the Terraform configuration. It then pauses execution allowing the user to manually trigger the Ansible deployment. Then safely destroying all resources (`terraform destroy`) to ensure reduced AWS costs. Also set your ssh (key).pem file in the ./aws-homelab.pem for ansible usage.
+
+## Reproducibility
+*Note: This is an automated CI/CD repository. Manual execution may cause errors.*
+To replicate this environment in your own AWS account:
+1. Configure AWS IAM credentials and an SSH Key pair.
+2. Create an S3 Bucket and update the Terraform backend according to your configuration in `terraform-try/terraform.tf`.
+3. Add the required Repository Secrets to GitHub (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SSH_KEY`, `DB_PASSWORD`) or any extra if it is needed.
+4. Push to the `main` branch to trigger the workflow.
+5. To prevent unnecessary AWS charges after testing(if aws and terraform are configured in the terminal). You can securely tear down the infrastructure locally by navigating to the terraform directory and running: `terraform init && terraform destroy`

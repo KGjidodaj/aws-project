@@ -61,7 +61,7 @@ resource "aws_route_table_association" "public_rt_assoc" {
 
 #Nat Gateway elastic IP
 resource "aws_eip" "nat_eip" {
-  domain = "vpc"
+  domain     = "vpc"
   tags = {
     Name = "AWS-project-NAT-EIP"
   }
@@ -185,8 +185,9 @@ resource "aws_instance" "nginx_server" {
   }
 }
 resource "aws_eip" "nginx_eip" {
-  instance = aws_instance.nginx_server.id
-  domain   = "vpc"
+  instance   = aws_instance.nginx_server.id
+  domain     = "vpc"
+  depends_on = [aws_internet_gateway.igw]
   tags = {
     Name = "AWS-project-nginx-EIP"
   }
