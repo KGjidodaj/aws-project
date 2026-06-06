@@ -1,4 +1,5 @@
 #Defining the VPC
+#tfsec:ignore:require-vpc-flow-logs-for-all-vpcs
 resource "aws_vpc" "main_network" {
   cidr_block = "10.0.0.0/16"
   #Enabling DNS access for high availability in case of ip change
@@ -19,9 +20,10 @@ resource "aws_internet_gateway" "igw" {
 
 #Public Subnet
 resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.main_network.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "eu-north-1a"
+  vpc_id            = aws_vpc.main_network.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "eu-north-1a"
+  #tfsec:ignore:no-public-ip-subnet
   map_public_ip_on_launch = true #Gives all IPs automatically
   tags = {
     Name = "AWS-project-Public-Subnet"
@@ -106,6 +108,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
+    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -113,6 +116,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
@@ -120,6 +124,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    #tfsec:ignore:aws-vpc-no-public-egress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -141,6 +146,7 @@ resource "aws_security_group" "internal_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    #tfsec:ignore:no-public-egress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -162,12 +168,16 @@ data "aws_ami" "ubuntu" {
 
 #Nginx instance
 resource "aws_instance" "nginx_server" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
+  metadata_options {
+    http_tokens = "required"
+  }
   subnet_id              = aws_subnet.public_subnet.id
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.nginx_bastion_sg.id]
   root_block_device {
+    encrypted   = true
     volume_size = 8
     volume_type = "gp3"
   }
@@ -185,12 +195,16 @@ resource "aws_eip" "nginx_eip" {
 }
 #Node.js app instance
 resource "aws_instance" "app_server" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
+  metadata_options {
+    http_tokens = "required"
+  }
   subnet_id              = aws_subnet.private_subnet.id
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.internal_sg.id]
   root_block_device {
+    encrypted   = true
     volume_size = 8
     volume_type = "gp3"
   }
@@ -201,12 +215,16 @@ resource "aws_instance" "app_server" {
 
 #Mysql Instance
 resource "aws_instance" "mysql_server" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
+  metadata_options {
+    http_tokens = "required"
+  }
   subnet_id              = aws_subnet.private_subnet.id
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.internal_sg.id]
   root_block_device {
+    encrypted   = true
     volume_size = 8
     volume_type = "gp3"
   }

@@ -26,6 +26,11 @@ jobs:
         working-directory: ./terraform-try # for the command to work
         run: terraform init -backend=false && terraform validate #without backend connection as no credentials have been given yet
 
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ./terraform-try
+          soft_fail: false
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
