@@ -1,9 +1,18 @@
 ---
+- name: Seting up and configuring grafana on all hosts
+  hosts: all
+  become: true
+  vars_files:
+    - inventory/group_vars/all.yml
+  roles:
+    - grafana_agent
+
 - name: Configuring the public reverse proxy
   hosts: proxy
   become: true
   roles:
     - nginx
+
 - name: Configuring the internal application server
   hosts: app
   become: true
@@ -11,6 +20,7 @@
     - inventory/group_vars/all.yml
   roles:
     - internal_app
+
 - name: Configuring the private database
   hosts: db
   become: true
