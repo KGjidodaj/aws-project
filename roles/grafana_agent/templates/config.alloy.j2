@@ -106,19 +106,34 @@ declare "journal_module" {
   argument "forward_to" {
       optional = false
   }
+
   loki.source.journal "default"  {
       max_age       = "12h0m0s"
       forward_to    = [loki.process.default.receiver]
       relabel_rules = loki.relabel.default.rules
   }
+
   loki.relabel "default" {
-      rule { source_labels = ["__journal__systemd_unit"]; target_label  = "unit" }
-      rule { source_labels = ["__journal__boot_id"]; target_label  = "boot_id" }
-      rule { source_labels = ["__journal__transport"]; target_label  = "transport" }
-      rule { source_labels = ["__journal_priority_keyword"]; target_label  = "level" }
-      forward_to    = []
+      rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+      }
+      rule {
+          source_labels = ["__journal__boot_id"]
+          target_label  = "boot_id"
+      }
+      rule {
+          source_labels = ["__journal__transport"]
+          target_label  = "transport"
+      }
+      rule {
+          source_labels = ["__journal_priority_keyword"]
+          target_label  = "level"
+      }
+      forward_to = []
   }
+
   loki.process "default" {
-      forward_to    = argument.forward_to.value
+      forward_to = argument.forward_to.value
   }
 }
