@@ -1,3 +1,5 @@
+<img width="957" height="396" alt="AWSec drawio" src="https://github.com/user-attachments/assets/f5e805af-ceee-4934-b6a5-e21db9ee24ba" />
+
 [![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
 [![Ansible-Terraform Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
 
