@@ -61,7 +61,7 @@ resource "aws_route_table_association" "public_rt_assoc" {
 
 #Nat Gateway elastic IP
 resource "aws_eip" "nat_eip" {
-  domain     = "vpc"
+  domain = "vpc"
   tags = {
     Name = "AWS-project-NAT-EIP"
   }
@@ -97,7 +97,7 @@ resource "aws_route_table_association" "private_rt_assoc" {
 }
 
 #Security Groups Part:
-#Nginx SG
+#Nginx SG (Tier 1)
 resource "aws_security_group" "nginx_bastion_sg" {
   name        = "nginx-bastion-sg"
   description = "Allow inbound HTTP/HTTPS and SSH from anywhere"
@@ -128,20 +128,27 @@ resource "aws_security_group" "nginx_bastion_sg" {
   }
 }
 
-#Internal App and DB SG
-resource "aws_security_group" "internal_sg" {
-  name        = "internal-app-db-sg"
-  description = "Allow inbound traddic only from Nginc bastion SG"
+#App SG (Tier 2)
+resource "aws_security_group" "app_sg" {
+  name        = "app-tier-sg"
+  description = "Allow inbound only from nginx"
   vpc_id      = aws_vpc.main_network.id
   ingress {
-    description     = "Allow all traffic from bastion host"
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
+    description     = "HTTP from nginx"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nginx_bastion_sg.id]
+  }
+  ingress {
+    description     = "ssh for ansible deployment"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.nginx_bastion_sg.id]
   }
   egress {
-    description = "Allow all outbound traffic for internet access (e.g. OS updates)"
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -150,6 +157,34 @@ resource "aws_security_group" "internal_sg" {
   }
 }
 
+#DB SG (Tier 3)
+resource "aws_security_group" "db_sg" {
+  name        = "db-tier-sg"
+  description = "Allow traffic only from the app instance"
+  vpc_id = aws_vpc.main_network.id
+  ingress {
+    description     = "Mysql traffic from the app node"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_sg.id]
+  }
+  ingress {
+    description     = "ssh for ansible"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nginx_bastion_sg.id]
+  }
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    #tfsec:ignore:no-public-egress-sgr
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 #Configuring EC2 Instances ----
 #Ubuntu ami (for the EC2 instances)
 data "aws_ami" "ubuntu" {
@@ -201,7 +236,7 @@ resource "aws_instance" "app_server" {
   }
   subnet_id              = aws_subnet.private_subnet.id
   key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.internal_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
   root_block_device {
     encrypted   = true
     volume_size = 8
@@ -221,7 +256,7 @@ resource "aws_instance" "mysql_server" {
   }
   subnet_id              = aws_subnet.private_subnet.id
   key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.internal_sg.id]
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
   root_block_device {
     encrypted   = true
     volume_size = 8
