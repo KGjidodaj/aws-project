@@ -1,4 +1,4 @@
-<img width="957" height="396" alt="AWSec drawio" src="https://github.com/user-attachments/assets/f5e805af-ceee-4934-b6a5-e21db9ee24ba" />
+# AWSec: AWS secured automated infrastructure
 
 [![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
 [![Ansible-Terraform Continuous Deployment](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/cd.yml)
@@ -10,6 +10,8 @@
 
 ## Overview
 This repository deploys and configures an AWS cloud infrastructure utilizing **Infrastructure as Code (IaC)** and automated **Configuration Management**. The entire lifecycle is fully automated via GitHub Actions, leaving no static IPs or hardcoded secrets in the repository.
+
+<img width="957" height="396" alt="AWSec drawio" src="https://github.com/user-attachments/assets/f5e805af-ceee-4934-b6a5-e21db9ee24ba" />
 
 ## Architecture & Network Topology
 The underlying hardware and L3/L4 network are managed by **Terraform**. It constructs a 3-tier Virtual Private Cloud (VPC) implementing Network Isolation:
