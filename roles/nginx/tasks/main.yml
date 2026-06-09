@@ -4,8 +4,15 @@
     name: nginx
     state: present
     update_cache: yes
-- name: 2. Setting up nginx as a reverse proxy
+- name: 2. Replace default land page
+  ansible.builtin.copy:
+    src: index.html
+    dest: /usr/share/nginx/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+- name: 3. Setting up nginx as a reverse proxy
   ansible.builtin.template:
     src: default.conf.j2
-    dest: /etc/nginx/sites-available/defaults
+    dest: /etc/nginx/sites-available/default
   notify: Restart Nginx

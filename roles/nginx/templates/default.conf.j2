@@ -1,6 +1,12 @@
 server {
-  listen 80;
-  location / {
-    proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:8080;
-  }
+    listen 80;
+    # for the custom index.html webpage to be used
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+    }
+    # for the traffic to be redirected to kubernetes
+    location /api/ {
+        proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:30000/;
+    }
 }
