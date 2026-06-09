@@ -134,9 +134,9 @@ resource "aws_security_group" "app_sg" {
   description = "Allow inbound only from nginx"
   vpc_id      = aws_vpc.main_network.id
   ingress {
-    description     = "HTTP from nginx"
-    from_port       = 8080
-    to_port         = 8080
+    description     = "HTTP from nginx to kubernetes node port"
+    from_port       = 30000
+    to_port         = 30000
     protocol        = "tcp"
     security_groups = [aws_security_group.nginx_bastion_sg.id]
   }

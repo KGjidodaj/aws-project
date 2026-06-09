@@ -1,6 +1,6 @@
 server {
   listen 80;
   location / {
-    proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:8080;
+    proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:30000; #30000 to line up with the manifests
   }
 }
