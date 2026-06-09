@@ -26,7 +26,7 @@ discovery.relabel "alloy_check" {
   targets = prometheus.exporter.self.alloy_check.targets
   rule {
     target_label = "instance"
-    replacement  = constants.hostname
+    replacement  = "{{ group_names[0] | upper }}"
   }
   rule {
     target_label = "job"
@@ -63,7 +63,7 @@ discovery.relabel "integrations_node_exporter" {
   targets = prometheus.exporter.unix.integrations_node_exporter.targets
   rule {
     target_label = "instance"
-    replacement  = constants.hostname
+    replacement  = "{{ group_names[0] | upper }}"
   }
   rule {
     target_label = "job"
@@ -94,7 +94,7 @@ loki.relabel "integrations_node_exporter" {
   }
   rule {
     target_label = "instance"
-    replacement  = constants.hostname
+    replacement  = "{{ group_names[0] | upper }}"
   }
 }
 
