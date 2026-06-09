@@ -68,7 +68,7 @@ jobs:
         run: |
           terraform init
           terraform plan # Because apply is hidden to a terr.log to prevent ip leakage
-          terraform apply -auto-approve > terr.log
+          terraform apply --auto-approve > terr.log
 
       - name: Extract IPs and mask logs
         #Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
@@ -89,11 +89,13 @@ jobs:
           cat <<EOF > ./inventory/group_vars/all.yml
           nginx_ip: "${BASTION_IP}"
           app_ip: "${APP_IP}"
-          db_ip: "${DB_IP}"
+          db_private_ip: "${DB_IP}"
           key_location: "./aws-homelab.pem"
           db_root_password: "${{ secrets.DB_PASSWORD }}"
           ansible_ssh_private_key_file: "./aws-homelab.pem"
           grafana_token: "${{ secrets.GRAFANA_TOKEN }}"
+          db_user: "${{ secrets.DB_USER }}"
+          db_name: "${{ secrets.DB_NAME }}"
           EOF
 
       - name: Execute Ansible Deployment

@@ -107,7 +107,8 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
+   #trivy:ignore:AVD-AWS-0107
+   #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -115,6 +116,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    #trivy:ignore:AVD-AWS-0107
     #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -134,9 +136,9 @@ resource "aws_security_group" "app_sg" {
   description = "Allow inbound only from nginx"
   vpc_id      = aws_vpc.main_network.id
   ingress {
-    description     = "HTTP from nginx"
-    from_port       = 8080
-    to_port         = 8080
+    description     = "HTTP from nginx to kubernetes node port"
+    from_port       = 30000
+    to_port         = 30000
     protocol        = "tcp"
     security_groups = [aws_security_group.nginx_bastion_sg.id]
   }
@@ -161,7 +163,7 @@ resource "aws_security_group" "app_sg" {
 resource "aws_security_group" "db_sg" {
   name        = "db-tier-sg"
   description = "Allow traffic only from the app instance"
-  vpc_id = aws_vpc.main_network.id
+  vpc_id      = aws_vpc.main_network.id
   ingress {
     description     = "Mysql traffic from the app node"
     from_port       = 3306
