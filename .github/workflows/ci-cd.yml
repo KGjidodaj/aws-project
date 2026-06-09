@@ -94,6 +94,8 @@ jobs:
           db_root_password: "${{ secrets.DB_PASSWORD }}"
           ansible_ssh_private_key_file: "./aws-homelab.pem"
           grafana_token: "${{ secrets.GRAFANA_TOKEN }}"
+          db_user: "${{ secrets.DB_USER }}"
+          db_name: "${{ secrets.DB_NAME }}"
           EOF
 
       - name: Execute Ansible Deployment

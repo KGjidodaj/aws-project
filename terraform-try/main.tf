@@ -107,7 +107,8 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
+   #trivy:ignore:AVD-AWS-0107
+   #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -115,6 +116,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    #trivy:ignore:AVD-AWS-0107
     #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }

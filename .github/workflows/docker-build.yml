@@ -2,7 +2,7 @@
 name: Build and push docker image
 on:
   push:
-    branches: ["feature/k3s"]
+    branches: ["feature/k3s", "main"]
     paths:
       - 'kubernetes-try/app-src/**'
 env:
