@@ -21,7 +21,7 @@ spec:
         image: ghcr.io/kgjidodaj.awsec-node-app:latest
         imagePullPolicy: Always #for a pull to always happen since I am using latest version
         ports:
-         - containerPort: 8080
+        - containerPort: 8080
         env: #according to the app.js process.env
         - name: DB_HOST
           value: "{{ db_private_ip }}"
