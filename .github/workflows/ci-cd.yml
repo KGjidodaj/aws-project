@@ -1,5 +1,5 @@
 ---
-name: Ansible-Terraform Continuous Deployment
+name: AWSec End-to-End Deployment (CI/CD)
 on:
   push:
     branches: ["main"]
