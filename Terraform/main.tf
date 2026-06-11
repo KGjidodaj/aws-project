@@ -30,14 +30,25 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-#Private Subnet
-resource "aws_subnet" "private_subnet" {
+#App subnet
+resource "aws_subnet" "app_subnet" {
   vpc_id                  = aws_vpc.main_network.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "eu-north-1a"
   map_public_ip_on_launch = false
   tags = {
-    Name = "AWS-project-Private-Subnet"
+    Name = "AWS-project-app-Subnet"
+  }
+}
+
+#Mysql subnet
+resource "aws_subnet" "mysql_subnet" {
+  vpc_id                  = aws_vpc.main_network.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = "eu-north-1a"
+  map_public_ip_on_launch = false
+  tags = {
+    Name = "AWS-project-mysql-Subnet"
   }
 }
 
@@ -77,23 +88,40 @@ resource "aws_nat_gateway" "nat" {
   }
 }
 
-#Route table (private)
-resource "aws_route_table" "private_rt" {
+#App Route table
+resource "aws_route_table" "app_rt" {
   vpc_id = aws_vpc.main_network.id
   route {
-    cidr_block = "0.0.0.0/0"
-    # hopefully all traffic goes to NAT
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat.id
   }
   tags = {
-    Name = "AWS-project-Private-RT"
+    Name = "AWS-project-App-RT"
   }
 }
 
-#Route table association
-resource "aws_route_table_association" "private_rt_assoc" {
-  subnet_id      = aws_subnet.private_subnet.id
-  route_table_id = aws_route_table.private_rt.id
+#Route table association (app)
+resource "aws_route_table_association" "app_rt_assoc" {
+  subnet_id      = aws_subnet.app_subnet.id
+  route_table_id = aws_route_table.app_rt.id
+}
+
+#Mysql Route Table
+resource "aws_route_table" "mysql_rt" {
+  vpc_id = aws_vpc.main_network.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+  tags = {
+    Name = "AWS-project-Mysql-RT"
+  }
+}
+
+#Route table association (mysql)
+resource "aws_route_table_association" "mysql_rt_assoc" {
+  subnet_id      = aws_subnet.mysql_subnet.id
+  route_table_id = aws_route_table.mysql_rt.id
 }
 
 #Security Groups Part:
@@ -107,8 +135,8 @@ resource "aws_security_group" "nginx_bastion_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-   #trivy:ignore:AVD-AWS-0107
-   #tfsec:ignore:aws-vpc-no-public-ingress-sgr
+    #trivy:ignore:AVD-AWS-0107
+    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
@@ -236,7 +264,7 @@ resource "aws_instance" "app_server" {
   metadata_options {
     http_tokens = "required"
   }
-  subnet_id              = aws_subnet.private_subnet.id
+  subnet_id              = aws_subnet.app_subnet.id
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   root_block_device {
@@ -256,7 +284,7 @@ resource "aws_instance" "mysql_server" {
   metadata_options {
     http_tokens = "required"
   }
-  subnet_id              = aws_subnet.private_subnet.id
+  subnet_id              = aws_subnet.mysql_subnet.id
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   root_block_device {
