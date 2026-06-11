@@ -48,7 +48,7 @@ if terraform apply; then
         cd ..
         echo "Running ansible-playbook..."
         ansible-playbook site.yml
-        cd terraform-try
+        cd Terraform
     fi
 
     read -p "Pausing the script before destruction, when you want to continue!"
