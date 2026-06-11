@@ -18,7 +18,7 @@
 
 - name: Template and upload manifests
   ansible.builtin.template:
-    src: "{{ playbook_dir }}/kubernetes-try/manifests/app-manifests.yml"
+    src: "{{ playbook_dir }}/Kubernetes/manifests/app-manifests.yml"
     dest: /opt/k3s-manifests/app-manifests.yml
 
 - name: Wait for Kubernetes to be ready
