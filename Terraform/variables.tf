@@ -1,3 +1,4 @@
+# Using variables for the instance types and the key
 variable "instance_type" {
   description = "Free tier instance type"
   type        = string

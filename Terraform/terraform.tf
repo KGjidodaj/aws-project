@@ -1,3 +1,4 @@
+# Setting up the configuration of terraform and provider
 terraform {
   required_providers {
     aws = {
@@ -6,6 +7,7 @@ terraform {
     }
   }
   required_version = ">= 1.15"
+  # Using s3 bucket as backend
   backend "s3" {
     bucket = "aws-project-kris-2026"
     key    = "aws-project/terraform.tfstate"

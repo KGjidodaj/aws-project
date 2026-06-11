@@ -1,4 +1,7 @@
 ---
+# The Infrastructure is also set up via terraform so for any problems check terraform directory!
+
+## Setting up the role to set up grafana alloy agents for all the EC2 instances.
 - name: Seting up and configuring grafana on all hosts
   hosts: all
   become: true
@@ -7,12 +10,14 @@
   roles:
     - grafana_agent
 
+## Configuring nginx as the reverse proxy with the custom static page.
 - name: Configuring the public reverse proxy
   hosts: proxy
   become: true
   roles:
     - nginx
 
+## Configuring node.js alongside k3s (check kubernetes directory).
 - name: Configuring the internal application server
   hosts: app
   become: true
@@ -21,6 +26,7 @@
   roles:
     - internal_app
 
+## Configuring the mysql database.
 - name: Configuring the private database
   hosts: db
   become: true
