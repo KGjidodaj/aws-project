@@ -1,0 +1,6 @@
+# Trivy accepted risks (might get updated-fixed in the future)
+# Nginx Bastion is intentionally open to the internet (Port 80)
+AVD-AWS-0107
+# Kubernetes K3s Manifest Ignores
+KSV-0014
+KSV-0118

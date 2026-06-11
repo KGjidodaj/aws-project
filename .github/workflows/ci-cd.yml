@@ -1,5 +1,5 @@
 ---
-name: Ansible-Terraform Continuous Deployment
+name: AWSec End-to-End Deployment (CI/CD)
 on:
   push:
     branches: ["main"]
@@ -23,13 +23,13 @@ jobs:
         run: ansible-playbook site.yml --syntax-check
 
       - name: Terraform init and validate check
-        working-directory: ./terraform-try # for the command to work
+        working-directory: ./Terraform # for the command to work
         run: terraform init -backend=false && terraform validate #without backend connection as no credentials have been given yet
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
-          working_directory: ./terraform-try
+          working_directory: ./Terraform
           soft_fail: false
           github_token: ${{ secrets.GITHUB_TOKEN }}
   deploy:
@@ -64,15 +64,15 @@ jobs:
           echo "${{ secrets.VAULT_PASS }}" > ./.vault_pass
 
       - name: Terraform initialization and application
-        working-directory: ./terraform-try
+        working-directory: ./Terraform
         run: |
           terraform init
           terraform plan # Because apply is hidden to a terr.log to prevent ip leakage
-          terraform apply -auto-approve > terr.log
+          terraform apply --auto-approve > terr.log
 
       - name: Extract IPs and mask logs
         #Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
-        working-directory: ./terraform-try
+        working-directory: ./Terraform
         run: |
           NGINX_IP=$(terraform output -raw nginx_public_ip)
           APP_IP=$(terraform output -raw app_private_ip)
@@ -89,11 +89,13 @@ jobs:
           cat <<EOF > ./inventory/group_vars/all.yml
           nginx_ip: "${BASTION_IP}"
           app_ip: "${APP_IP}"
-          db_ip: "${DB_IP}"
+          db_private_ip: "${DB_IP}"
           key_location: "./aws-homelab.pem"
           db_root_password: "${{ secrets.DB_PASSWORD }}"
           ansible_ssh_private_key_file: "./aws-homelab.pem"
           grafana_token: "${{ secrets.GRAFANA_TOKEN }}"
+          db_user: "${{ secrets.DB_USER }}"
+          db_name: "${{ secrets.DB_NAME }}"
           EOF
 
       - name: Execute Ansible Deployment
