@@ -17,7 +17,7 @@ if [[ $answer == "yes" ]] || [[ $answer == "Yes" ]]; then
 
     echo -e "Running terraform plan... \n(sleeping for 6 seconds at the end for a double check)"
     terraform plan
-    sleep 6
+    sleep 6 #allowing the user to quickly read the plans
 
 fi
 
@@ -35,15 +35,26 @@ if terraform apply; then
         DB_IP=$(terraform output -raw mysql_private_ip)
 
         mkdir -p ../inventory/group_vars > /dev/null 2>&1
-        echo "[*] Injecting IPs into Ansible configuration..."
-        cat <<EOF > ../inventory/group_vars/all.yml
-        nginx_ip: "${NGINX_IP}"
-        app_ip: "${APP_IP}"
-        db_ip: "${DB_IP}"
-        key_location: "./aws-homelab.pem"
-        db_root_password: "local_testing_password"
-        ansible_ssh_private_key_file: "./aws-homelab.pem"
-        EOF
+
+        if [[ -f  ../inventory/group_vars/all.yml ]];then
+                echo " "
+        else
+                echo "[*] Injecting IPs into Ansible configuration..."
+                cat <<EOF > ../inventory/group_vars/all.yml
+nginx_ip: "${NGINX_IP}"
+app_ip: "${APP_IP}"
+db_private_ip: "${DB_IP}"
+key_location: "./aws-homelab.pem"
+db_root_password: "local_testing_password"
+db_name: "db_name"
+db_user: "homelab_user"
+ansible_ssh_private_key_file: "./aws-homelab.pem"
+grafana_token: "input your token here for the grafana alloy agents"
+EOF
+
+                echo "Add your your own secrets to this file!!!"
+                sleep 4
+        fi
 
         cd ..
         echo "Running ansible-playbook..."
