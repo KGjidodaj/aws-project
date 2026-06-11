@@ -1,4 +1,5 @@
 // Boilerplate sourced and adapted for Kubernetes from: [mangya/node-express-mysql-boilerplate]
+// Setting up constants not to be changed later.
 const express = require('express');
 const mysql = require('mysql2');
 const app = express();
@@ -10,6 +11,7 @@ const db = mysql.createConnection({
     database: process.env.DB_NAME
 });
 
+// Using console.log and console.error for debug purposes.
 db.connect((err) => {
     if (err) {
         console.error('Database connection failed: ' + err.stack);
