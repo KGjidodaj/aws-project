@@ -20,7 +20,7 @@ This repository deploys a custom AWS cloud infrastructure. It utilizes **Infrast
 ## Architecture & Network Topology
 The underlying hardware and network, managed by **Terraform**. It constructs a 3-tier VPC implementing Micro-segmentation:
 
-* **Tier 1 (Public Bastion/Proxy):** Nginx hosted in a Public Subnet with an Elastic IP. It acts as the DMZ and sole entry point. It utilizes **L7 Split-Routing**. Serves a sterile static custom page at the root (`/`) that mitigates passive scanning. While proxying API traffic (`/api/`) internally.
+* **Tier 1 (Public Bastion/Proxy):** Nginx hosted in a Public Subnet with an Elastic IP. It acts as the DMZ and sole entry point. It utilizes L7 Split-Routing, serving a custom landing page. This mitigates passive nginx scanning, while at the same time nginx is securely proxying API traffic (/api/) internally.
 * **Tier 2 (Application Layer / K8s):** A single-node **Kubernetes (K3s)** cluster hosted in a Private Subnet. It runs the containerized Node.js application in Pod replicas. It accepts traffic only from the Tier 1 Security Group via Kubernetes NodePort (`30000`).
 * **Tier 3 (Database Layer):** MySQL hosted in a Private Subnet. Accepts traffic strictly from the Tier 2 K8s network.
 * **Egress Routing:** A NAT Gateway is used in the Public Subnet. It allows outbound internet access for the Private nodes without exposing them.
