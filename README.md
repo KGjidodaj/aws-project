@@ -10,7 +10,7 @@
 [![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker)](https://github.com/features/packages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<img width="957" height="396" alt="AWSec drawio" src="https://github.com/user-attachments/assets/f5e805af-ceee-4934-b6a5-e21db9ee24ba" />
+<img width="1412" height="576" alt="AWSec drawio" src="https://github.com/user-attachments/assets/8231f8a4-733d-48e3-aa5b-38343799f937" />
 
 
 ## Overview
