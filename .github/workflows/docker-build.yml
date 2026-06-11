@@ -2,9 +2,9 @@
 name: Build and push docker image
 on:
   push:
-    branches: ["feature/k3s", "main"]
+    branches: ["main"]
     paths:
-      - 'kubernetes-try/app-src/**'
+      - 'Kubernetes/app-src/**'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kgjidodaj/awsec-node-app
@@ -28,6 +28,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          context: ./kubernetes-try/app-src #since the files needed are saved there
+          context: ./Kubernetes/app-src #since the files needed are saved there
           push: true
           tags: ghcr.io/kgjidodaj/awsec-node-app:latest
