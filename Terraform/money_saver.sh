@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 #Colours for results
 GREEN='\033[0;32m'
@@ -11,7 +11,7 @@ echo "Running terraform validate to check the code, might take a little time..."
 terraform validate
 
 echo  "Would you like to check the plan-reorganize the code(terraform plan&terraform fmt) "
-read -p "[Yes/No]: " answer
+read -r -p "[Yes/No]: " answer
 if [[ $answer == "yes" ]] || [[ $answer == "Yes" ]]; then
     echo "Running the commands..."
 
@@ -27,7 +27,7 @@ fi
 echo "Running terraform apply to apply any changes, might take a little time..."
 if terraform apply; then
     echo -e "\n\n\n${GREEN}Terraform apply worked.--------------------${NC}"
-    read -p "Would you like to continue with Ansible deployment before destruction(yes/no):" ansible
+    read -r -p "Would you like to continue with Ansible deployment before destruction(yes/no):" ansible
 
     if [[ $ansible == "Yes" ]] || [[ $ansible == "yes" ]];then
 
@@ -65,7 +65,7 @@ EOF
         cd Terraform
     fi
 
-    read -p "Pausing the script before destruction, when you want to continue!"
+    read -r -p "Pausing the script before destruction, when you want to continue!"
     echo "Starting the teardown process with terraform destroy----------."
     sleep 0.5
 
