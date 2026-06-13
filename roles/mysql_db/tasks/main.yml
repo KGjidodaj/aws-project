@@ -16,6 +16,6 @@
   ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS homelab_db;"
 - name: 5. Creating user
   ansible.builtin.command: >
-    mysql -e "CREATE USER IF NOT EXISTS 'homelab_user'@'%' IDENTIFIED BY '{{ db_root_password }}';
+    mysql -e "CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED BY '{{ db_root_password }}';
     GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@'%';
     FLUSH PRIVILEGES;"
