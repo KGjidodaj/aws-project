@@ -7,7 +7,6 @@
 
 - name: 2. Adding the Grafana APT repository
   ansible.builtin.deb822_repository: #using modern secure deb822_repo
-  file:
     name: grafana
     types: deb
     uris: https://apt.grafana.com
