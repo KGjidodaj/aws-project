@@ -6,7 +6,11 @@
     update_cache: yes
 
 - name: 2. Adding the Grafana APT repository
-  ansible.builtin.deb822_repository:
+  ansible.builtin.deb822_repository: #using modern secure deb822_repo
+  file:
+    path: /opt/k3s-manifests
+    state: directory
+    mode: '0755'
     name: grafana
     types: deb
     uris: https://apt.grafana.com

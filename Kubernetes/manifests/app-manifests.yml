@@ -41,6 +41,7 @@ spec:
   selector:
     app: awsec-node-app
   type: NodePort
+  #Aligning nodeport as the port nginx sends traffic to according to the template.
   ports:
   - port: 80
     targetPort: 8080

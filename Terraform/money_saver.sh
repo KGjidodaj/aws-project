@@ -12,8 +12,10 @@ terraform validate
 
 echo  "Would you like to check the plan-reorganize the code(terraform plan&terraform fmt) "
 read -r -p "[Yes/No]: " answer
+
 if [[ $answer == "yes" ]] || [[ $answer == "Yes" ]]; then
-    echo "Running the commands..."
+
+    echo -e "\nRunning the commands..."
 
     echo "Running terraform fmt..."
     terraform fmt
@@ -24,13 +26,19 @@ if [[ $answer == "yes" ]] || [[ $answer == "Yes" ]]; then
 
 fi
 
-echo "Running terraform apply to apply any changes, might take a little time..."
-if terraform apply; then
+echo -e "\nRunning terraform apply to apply any changes, might take a little time..."
+sleep 0.4
+read -r -p "Press enter to continue with terraform apply: " pause
+echo ""
+
+if terraform apply --auto-approve; then
+
     echo -e "\n\n\n${GREEN}Terraform apply worked.--------------------${NC}"
     read -r -p "Would you like to continue with Ansible deployment before destruction(yes/no):" ansible
 
     if [[ $ansible == "Yes" ]] || [[ $ansible == "yes" ]];then
 
+        clear #clearing the screen for a nicer output
         # Outputting the raw ips and saving in the all.yml file like in the pipeline for dynamic IP usage.
         echo "Extracting IPs for local ansible-playbook usage"
         NGINX_IP=$(terraform output -raw nginx_public_ip)
@@ -43,6 +51,8 @@ if terraform apply; then
                 echo " "
         else
                 echo "[*] Injecting IPs into Ansible configuration..."
+
+                # Implementing cat <<EOF? this way to avoid potential errors
                 cat <<EOF > ../inventory/group_vars/all.yml
 nginx_ip: "${NGINX_IP}"
 app_ip: "${APP_IP}"
@@ -59,6 +69,7 @@ EOF
                 sleep 4
         fi
 
+        # Going back one step in directories to apply ansible-playbook.yml and then going back to the Terraform directory.
         cd ..
         echo "Running ansible-playbook..."
         ansible-playbook site.yml
@@ -66,12 +77,10 @@ EOF
     fi
 
     read -r -p "Pausing the script before destruction, when you want to continue!"
-    echo "Starting the teardown process with terraform destroy----------."
+    echo "Starting the teardown process with terraform destroy----------"
     sleep 0.5
 
-    if terraform destroy; then
-        echo "Starting the teardown process with terraform destroy--------------."
-        sleep 0.5
+    if terraform destroy --auto-approve; then
         echo -e "${GREEN}[+] Destroy command finished, billing stopped.${NC}"
     else
         echo -e "${RED}[!] ERROR: Command stopped get now into the aws cloud account and disable manually to stop billing!${NC}"

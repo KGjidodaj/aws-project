@@ -33,7 +33,7 @@ resource "aws_subnet" "public_subnet" {
 #App subnet
 resource "aws_subnet" "app_subnet" {
   vpc_id                  = aws_vpc.main_network.id
-  cidr_block              = "10.0.2.0/24"
+  cidr_block              = "10.0.2.0/24" #splitting cidr_block 10.0.2.0/24 for the app subnet
   availability_zone       = "eu-north-1a"
   map_public_ip_on_launch = false
   tags = {
@@ -44,7 +44,7 @@ resource "aws_subnet" "app_subnet" {
 #Mysql subnet
 resource "aws_subnet" "mysql_subnet" {
   vpc_id                  = aws_vpc.main_network.id
-  cidr_block              = "10.0.3.0/24"
+  cidr_block              = "10.0.3.0/24" #splitting cidr_block 10.0.3.0/24 for the mysql subnet
   availability_zone       = "eu-north-1a"
   map_public_ip_on_launch = false
   tags = {
@@ -57,7 +57,7 @@ resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main_network.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw.id #Using the internet gateway for the nginx public intance opposed to the other instances
   }
   tags = {
     Name = "AWS-project-Public-RT"
@@ -82,7 +82,7 @@ resource "aws_eip" "nat_eip" {
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.public_subnet.id
-  depends_on    = [aws_internet_gateway.igw]
+  depends_on    = [aws_internet_gateway.igw] #Can cause errors if igw is not created first
   tags = {
     Name = "AWS-project-NAT_Gateway"
   }
@@ -146,7 +146,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
     protocol    = "tcp"
     #trivy:ignore:AVD-AWS-0107
     #tfsec:ignore:aws-vpc-no-public-ingress-sgr
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #Using this cidr block since this project is using a ci/cd pipeline and all github servers are ephemeral from different ips
   }
   egress {
     description = "Allow all outbound traffic"
@@ -164,7 +164,8 @@ resource "aws_security_group" "app_sg" {
   description = "Allow inbound only from nginx"
   vpc_id      = aws_vpc.main_network.id
   ingress {
-    description     = "HTTP from nginx to kubernetes node port"
+    description = "HTTP from nginx to kubernetes node port"
+    # Using the nodeport specified in the manifests
     from_port       = 30000
     to_port         = 30000
     protocol        = "tcp"
@@ -175,7 +176,7 @@ resource "aws_security_group" "app_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.nginx_bastion_sg.id]
+    security_groups = [aws_security_group.nginx_bastion_sg.id] #Allowing an ssh connection only from the nginx-bastion-prox
   }
   egress {
     description = "Allow all outbound traffic"
@@ -204,7 +205,7 @@ resource "aws_security_group" "db_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.nginx_bastion_sg.id]
+    security_groups = [aws_security_group.nginx_bastion_sg.id] #Allowing an ssh connection only from the nginx-bastion-proxy
   }
   egress {
     description = "Allow all outbound traffic"
@@ -222,10 +223,11 @@ data "aws_ami" "ubuntu" {
   owners      = ["099720109477"]
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-*"] #Using one of the newest images
   }
   filter {
-    name   = "virtualization-type"
+    name = "virtualization-type"
+    #Using hvm instead of the legacy PV to run with the variable specified instance types
     values = ["hvm"]
   }
 }
@@ -235,7 +237,7 @@ resource "aws_instance" "nginx_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   metadata_options {
-    http_tokens = "required"
+    http_tokens = "required" #IMDSv2 required
   }
   subnet_id              = aws_subnet.public_subnet.id
   key_name               = var.key_name
@@ -252,7 +254,7 @@ resource "aws_instance" "nginx_server" {
 resource "aws_eip" "nginx_eip" {
   instance   = aws_instance.nginx_server.id
   domain     = "vpc"
-  depends_on = [aws_internet_gateway.igw]
+  depends_on = [aws_internet_gateway.igw] #Depend on the internet gateway to be created for potential errors
   tags = {
     Name = "AWS-project-nginx-EIP"
   }

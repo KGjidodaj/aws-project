@@ -7,11 +7,12 @@
     state: present
     update_cache: yes
 
+#Changing mysql bind address from original 127.0.0.1 to 0.0.0.0 to be able to listen with node.
 - name: 2. changing bind address
   ansible.builtin.lineinfile:
     path: /etc/mysql/mysql.conf.d/mysqld.cnf
     regexp: '^bind-address'
-    line: 'bind-address = 0.0.0.0'
+    line: 'bind-address = 0.0.0.0' #Using 0.0.0.0 is fine in this project
   notify: Restart mysql
 
 - name: 4. Creating DB
