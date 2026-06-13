@@ -1,27 +1,28 @@
 ---
-- name: Install lightweight k3s
+# Using curl and piping the output to install k3s with args so it does not get installed everytime this is run if it exists.
+- name: 1. Install lightweight k3s
   shell: curl -sfL https://get.k3s.io | sh -
   args:
     creates: /usr/local/bin/k3s
 
-- name: Ensure k3s service is running
+- name: 2. Ensure k3s service is running
   systemd:
     name: k3s
     state: started
     enabled: yes
 
-- name: Create directory for manifests
+- name: 3. Create directory for manifests
   file:
     path: /opt/k3s-manifests
     state: directory
-    mode: '0755'
+    mode: '0755' #configuring the directory to 0755 mode to allow for debugging of simple users but only root can modify
 
-- name: Template and upload manifests
+- name: 4. Template and upload manifests
   ansible.builtin.template:
     src: "{{ playbook_dir }}/Kubernetes/manifests/app-manifests.yml"
     dest: /opt/k3s-manifests/app-manifests.yml
 
-- name: Wait for Kubernetes to be ready
+- name: 5. Wait for Kubernetes to be ready
   shell: k3s kubectl get nodes
   register: nodes_ready
   until: nodes_ready.rc == 0 # checking return code
@@ -29,7 +30,7 @@
   delay: 10
   changed_when: false
 
-- name: Apply kubernets manifests - deploy app and service
+- name: 6. Apply kubernets manifests - deploy app and service
   shell: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml #in case of direcroty confusion for the amdinistator file
