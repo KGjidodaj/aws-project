@@ -7,7 +7,7 @@ server {
     listen 80;
     # for the custom index.html webpage to be used
     location / {
-        limi_req zone=mylimit burst=10 nodelay;
+        limit_req zone=mylimit burst=10 nodelay;
         root /usr/share/nginx/html;
         index index.html;
     }
