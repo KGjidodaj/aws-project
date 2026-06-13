@@ -27,8 +27,12 @@
   until: nodes_ready.rc == 0 # checking return code
   retries: 5
   delay: 10
+  changed_when: false
 
 - name: Apply kubernets manifests - deploy app and service
   shell: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml #in case of direcroty confusion for the amdinistator file
+  register: kubectl_output #saving the output
+  # Checking if created or configured is in the output for idempotency of the task.
+  changed_when: "'created' in kubectl_output.stdout or 'configured' in kubectl_output.stdout"
