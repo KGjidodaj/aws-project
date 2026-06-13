@@ -3,6 +3,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const app = express();
+app.set('trust proxy', true);
 const port = 8080;
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
