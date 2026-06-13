@@ -6,16 +6,21 @@
       - python3-pymysql
     state: present
     update_cache: yes
+
 - name: 2. changing bind address
   ansible.builtin.lineinfile:
     path: /etc/mysql/mysql.conf.d/mysqld.cnf
     regexp: '^bind-address'
     line: 'bind-address = 0.0.0.0'
   notify: Restart mysql
+
 - name: 4. Creating DB
-  ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS homelab_db;"
+  ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
+  changed_when: false
+
 - name: 5. Creating user
   ansible.builtin.command: >
-    mysql -e "CREATE USER IF NOT EXISTS 'homelab_user'@'%' IDENTIFIED BY '{{ db_root_password }}';
+    mysql -e "CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED BY '{{ db_root_password }}';
     GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@'%';
     FLUSH PRIVILEGES;"
+  changed_when: false

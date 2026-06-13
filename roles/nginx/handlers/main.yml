@@ -4,3 +4,9 @@
     name: nginx
     state: restarted
     enabled: yes
+
+- name: Restart CrowdSec
+  ansible.builtin.systemd:
+    name: crowdsec
+    state: restarted
+    enabled: yes

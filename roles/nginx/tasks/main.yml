@@ -4,15 +4,48 @@
     name: nginx
     state: present
     update_cache: yes
+
 - name: 2. Replace default land page
   ansible.builtin.copy:
     src: index.html
     dest: /usr/share/nginx/html/index.html
+    #Supressing privilages for only root to be able to modify the file
     owner: root
     group: root
     mode: '0644'
-- name: 3. Setting up nginx as a reverse proxy
-  ansible.builtin.template:
+
+- name: 3. Add CrowdSec apt repo
+  ansible.builtin.shell: curl -s curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
+  args: #For idempotency reasons
+    creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
+
+- name: 4. Fix crowdsec repo mismatch for Ubuntu 26.04, fallback to noble
+  ansible.builtin.replace:
+    # Trying the latest Ubuntu (resolute) version that the instance uses, a 404 error did not allow for updates.
+    # So falling back to noble which in tests worked.
+    path: /etc/apt/sources.list.d/crowdsec_crowdsec.list
+    regexp: 'resolute'
+    replace: 'noble'
+
+- name: 5. Installing crowdsec
+  ansible.builtin.apt:
+    name: crowdsec
+    state: present
+    update_cache: yes #updating again since sources.list.d got modified
+
+- name: 6. Installing crowdsec bouncers for nginx
+  ansible.builtin.apt:
+    name: crowdsec-nginx-bouncer
+    state: present
+
+- name: 7. Setting up nginx as a reverse proxy and restarting services
+  ansible.builtin.template: # Using a template for safety and readability
     src: default.conf.j2
     dest: /etc/nginx/sites-available/default
-  notify: Restart Nginx
+    # Only root can modify the file
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart Nginx
+    - Restart CrowdSec

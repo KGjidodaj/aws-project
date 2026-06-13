@@ -1,12 +1,19 @@
+# Using rate limitting according to "https://blog.nginx.org/blog/rate-limiting-nginx" examples.
+# Implementing it in the loading page and the api location
+limit_req_zone $binary_remote_addr zone=mylimit:10m rate=10r/s;
+
+#Setting up the server configuration
 server {
     listen 80;
     # for the custom index.html webpage to be used
     location / {
+        limit_req zone=mylimit burst=10 nodelay;
         root /usr/share/nginx/html;
         index index.html;
     }
-    # for the traffic to be redirected to kubernetes
+    # for the traffic to be redirected to kubernetes, using hostvars to assign the ip dynamically.
     location /api/ {
+        limit_req zone=mylimit burst=10 nodelay;
         proxy_pass http://{{ hostvars[groups['app'][0]]['ansible_host'] }}:30000/;
     }
 }
