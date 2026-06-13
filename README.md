@@ -41,15 +41,22 @@ OS configuration, K3s bootstrapping and cluster deployments, handled by **Ansibl
 (`grafana_agent`, `nginx`, `internal_app`, `mysql_db`)
 
 * **Declarative K8s Manifests:** Replaces legacy imperative deployments. Ansible dynamically templates Kubernetes YAML files (`app-manifests.yml`).
-* **Dynamic State Injection:** No secrets are stored in the repo. Ansible extracts Terraform state (Private IPs) and Vault credentials. Then Inserts them directly into the Kubernetes Pod Environment Variables during runtime.
+* **Dynamic State Injection:** No secrets are stored in the repo. Ansible extracts Terraform state (Private IPs) and Vault credentials. Then inserts them directly into the Kubernetes Pod Environment Variables during runtime.
 * **Zero-Trust SSH Tunneling:** Ansible utilizes an SSH `ProxyCommand` via the Nginx Bastion host to securely configure the private servers.
+## Dynamic Edge Security & Intrusion Prevention (IPS)
+The public-facing Bastion host is fortified against Layer 7 volumetric and targeted attacks.
+* **Traffic Shaping:** Nginx employs Token-Bucket rate limiting (`limit_req_zone`) handling sudden traffic spikes without delaying legitimate requests.
+* **Dynamic IPS (CrowdSec):** A locally deployed CrowdSec agent parses access and authentication logs. Paired with an Nginx Bouncer that actively drops connections from malicious IPs. Together they effectively shield the internal Kubernetes overlay network from unauthorized scans and brute-force attempts.
+
+##  Idempotency & Templating
+The Configuration adheres to strict idempotency standards. Execution workflows are engineered to evaluate the target state before applying changes. This ensures playbooks can run continuously without changing already configured infrastructure. Furthermore, hardcoded values have been entirely eliminated and are inserted dynamically at runtime using secure Jinja2 templating.
 
 
 ## CI/CD Pipelines (GitHub Actions)
 The End-to-End lifecycle relies on two distinct pipelines separating concerns:
 
-1. **Docker Build Pipeline (`docker-build.yml`):** Automatically triggers on application code changes. It builds the Alpine-based Dockerfile.Pushes the image to the GitHub Container Registry (GHCR).
-2. **Infrastructure Pipeline (`ci-cd.yml`):** Enforces Continuous Integration (CI). Then it initiate Continuous Deployment (CD).
+1. **Docker Build Pipeline (`docker-build.yml`):** Automatically triggers on application code changes. It builds the Alpine-based Dockerfile. Pushes the image to the GitHub Container Registry (GHCR).
+2. **Infrastructure Pipeline (`ci-cd.yml`):** Enforces Continuous Integration (CI). Then it initiates Continuous Deployment (CD).
    * **Static Application Security Testing (SAST):** Integrates `tfsec` as a hard-fail pipeline stopper. Enforcing secure HCL configurations.
    * **Sequential Job Execution:** The CD phase requires the CI phase to pass. Thus preventing broken or insecure code from reaching production.
    * **OPSEC Log Securing:** Live action IP extraction and masking prevent infrastructure leakage.
