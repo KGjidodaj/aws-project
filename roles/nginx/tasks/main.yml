@@ -47,5 +47,32 @@
     group: root
     mode: '0644'
   notify:
-    - Restart Nginx
     - Restart CrowdSec
+
+#Using the curl command to update the ip of the nginx instance.
+#The curl command only needs to run once as the nginx host has an EIP.
+- name: 8. Checking if ssl certificates already exist
+  ansible.builtin.stat:
+    path: /etc/letsencrypt/live/{{ full_domain }}/fullchain.pem
+  register: ssl_cert
+
+- name: 9. Setting up DuckDNS dynamic IP upload
+  ansible.builtin.shell: "curl -s 'https://www.duckdns.org/update?domains={{ domain }}&token={{ duckdns_token }}&ip='"
+
+- name: 10. Stop Nginx to free port 80 for certbot
+  ansible.builtin.systemd:
+    name: nginx
+    state: stopped
+  when: not ssl_cert.stat.exists
+
+- name: 11. Installing certbot
+  ansible.builtin.apt:
+    name: certbot
+    state: present
+
+#Using (HTTP-01 Challenge) for an ssl certificate with certbot
+- name: 12. Requesting Let's Encrypt SSL certificate
+  ansible.builtin.command: >
+    certbot certonly --standalone -d {{ full_domain }} --non-interactive --agree-tos --no-eff-email -m {{ email }}
+  when: not ssl_cert.stat.exists
+  notify: Restart Nginx

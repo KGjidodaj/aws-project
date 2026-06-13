@@ -131,7 +131,7 @@ resource "aws_security_group" "nginx_bastion_sg" {
   description = "Allow inbound HTTP/HTTPS and SSH from anywhere"
   vpc_id      = aws_vpc.main_network.id
   ingress {
-    description = "HTTP from Internet"
+    description = "HTTP from Internet to HTTPS"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -139,6 +139,16 @@ resource "aws_security_group" "nginx_bastion_sg" {
     #tfsec:ignore:aws-vpc-no-public-ingress-sgr
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "HTTPS from the internet"
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    #trivy:ignore:AVD-AWS-0107
+    #tfsec:ignore:aws-vpc-no-public-ingress-sgr
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   ingress {
     description = "SSH from Admin and CD pipeline"
     from_port   = 22
