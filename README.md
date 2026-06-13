@@ -24,6 +24,16 @@ The underlying hardware and network, managed by **Terraform**. It constructs a 3
 * **Tier 2 (Application Layer / K8s):** A single-node **Kubernetes (K3s)** cluster hosted in a Private Subnet. It runs the containerized Node.js application in Pod replicas. It accepts traffic only from the Tier 1 Security Group via Kubernetes NodePort (`30000`).
 * **Tier 3 (Database Layer):** MySQL hosted in a Private Subnet. Accepts traffic strictly from the Tier 2 K8s network.
 * **Egress Routing:** A NAT Gateway is used in the Public Subnet. It allows outbound internet access for the Private nodes without exposing them.
+* **Traffic Blackholing:** The Nginx configuration uses a strict SNI-only policy. A 'catch-all' block drops connections targeted at the Public IP. This renders the server invisible to automated botnets and unauthorized port scanners.
+
+
+## Cryptography & Public Key Infrastructure (PKI)
+
+##  Cryptography & Identity (A+ SSL Rating)
+All external communications are encrypted using Let's Encrypt certificates, managed using Ansible and Certbot.
+* **A+ SSLLabs Rating:** The proxy strictly enforces TLS 1.2 and TLS 1.3, utilizing Mozilla's Intermediate cipher suites.
+* **Perfect Forward Secrecy (PFS):** Session tickets are disabled to ensure that past communications cannot be decrypted even if the private key is compromised.
+* **HSTS Enforced:** Strict-Transport-Security headers guarantee that browsers only interact with the infrastructure over HTTPS.
 
 
 ## Observability & Telemetry (SaaS Monitoring)

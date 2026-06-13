@@ -96,6 +96,10 @@ jobs:
           grafana_token: "${{ secrets.GRAFANA_TOKEN }}"
           db_user: "${{ secrets.DB_USER }}"
           db_name: "${{ secrets.DB_NAME }}"
+          domain: "${{ secrets.DOMAIN }}"
+          full_domain: "${{ secrets.FULL_DOMAIN }}"
+          duckdns_token: "${{ secrets.DUCKDNS_TOKEN }}"
+          email: "${{ secrets.EMAIL }}"
           EOF
 
       - name: Execute Ansible Deployment
