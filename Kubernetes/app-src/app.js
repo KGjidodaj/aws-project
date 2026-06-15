@@ -25,8 +25,12 @@ app.get('/', (req, res) => {
     res.send('<h1>Success!</h1>');
 });
 
+// Using a catch all for endpoints that do not exist
+app.use((req, res) => {
+    res.status(404).json({ error: "Endpoint not found or not allowed." });
+});
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`App listening on port ${port}`);
 });
-
 
