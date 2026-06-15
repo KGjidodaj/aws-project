@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+source .env
 #Colours for results
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -58,11 +59,12 @@ nginx_ip: "${NGINX_IP}"
 app_ip: "${APP_IP}"
 db_private_ip: "${DB_IP}"
 key_location: "./aws-homelab.pem"
-db_root_password: "local_testing_password"
-db_name: "db_name"
-db_user: "homelab_user"
+db_root_password: "$DB_root_pass"
+db_name: "$DB_name"
+db_user: "$DB_user"
 ansible_ssh_private_key_file: "./aws-homelab.pem"
-grafana_token: "input your token here for the grafana alloy agents"
+grafana_token: "$Grafana_token"
+
 EOF
 
                 echo "Add your your own secrets to this file!!!"
