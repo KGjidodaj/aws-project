@@ -15,7 +15,7 @@
     mode: '0644'
 
 - name: 3. Add CrowdSec apt repo
-  ansible.builtin.shell: curl -s curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
+  ansible.builtin.shell: curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
   args: #For idempotency reasons
     creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
 
