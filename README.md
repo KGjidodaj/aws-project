@@ -1,4 +1,4 @@
-# AWSec: AWS Automated and Secured 3-Tier Architecture (IaC & CI/CD)
+# AWSec: Automated and Secured 3-Tier Architecture (IaC & CI/CD)
 
 [![Docker Image CI](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml)
 [![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
@@ -12,55 +12,63 @@
 
 <img width="1412" height="576" alt="AWSec drawio" src="https://github.com/user-attachments/assets/8231f8a4-733d-48e3-aa5b-38343799f937" />
 
-
 ## Overview
-This repository deploys a custom AWS cloud infrastructure. It utilizes **Infrastructure as Code (IaC)**, automated **Configuration Management**, **Container Orchestration** and **DevSecOps** practices. The entire lifecycle is automated using GitHub Actions. This ensures secure, immutable and declarative deployments.
+This repository deploys a custom AWS cloud infrastructure. It is built strictly on **Infrastructure as Code (IaC)**, automated **Configuration Management**, **Container Orchestration** and **DevSecOps** practices. The entire lifecycle is automated using GitHub Actions ensuring secure, immutable and declarative deployments.
 
 
-## Architecture & Network Topology
-The underlying hardware and network, managed by **Terraform**. It constructs a 3-tier VPC implementing Micro-segmentation:
+##  Architecture & Network Topology
+The hardware and network are provisioned using **Terraform**, constructing a safe 3-tier VPC:
 
-* **Tier 1 (Public Bastion/Proxy):** Nginx hosted in a Public Subnet with an Elastic IP. It acts as the DMZ and sole entry point. It utilizes L7 Split-Routing, serving a custom landing page. This mitigates passive nginx scanning, while at the same time nginx is securely proxying API traffic (/api/) internally.
-* **Tier 2 (Application Layer / K8s):** A single-node **Kubernetes (K3s)** cluster hosted in a Private Subnet. It runs the containerized Node.js application in Pod replicas. It accepts traffic only from the Tier 1 Security Group via Kubernetes NodePort (`30000`).
-* **Tier 3 (Database Layer):** MySQL hosted in a Private Subnet. Accepts traffic strictly from the Tier 2 K8s network.
-* **Egress Routing:** A NAT Gateway is used in the Public Subnet. It allows outbound internet access for the Private nodes without exposing them.
+* **Tier 1 (Public Bastion/Proxy):** An Nginx server hosted in a Public Subnet with an Elastic IP. It acts as the only entry point. It utilizes L7 Split-Routing to serve a landing page while securely proxying API traffic (`/api/`) internally.
+* **Tier 2 (Application Layer / K8s):** A single-node **Kubernetes (K3s)** cluster hosted in a Private Subnet. It runs the containerized Node.js application in Pod replicas. It also accepts traffic only from the Tier 1 Security Group via NodePort (`30000`).
+* **Tier 3 (Database Layer):** MySQL hosted in an isolated Private Subnet, accepting traffic strictly from the Tier 2 K8s network.
+* **Egress Routing:** A NAT Gateway in the Public Subnet grants outbound internet access to the private nodes without exposing them.
 
 
-## Observability & Telemetry (SaaS Monitoring)
-The infrastructure can be continuously monitored. Preventing resource exhaustion while also providing metrics.
+##  Security & Hardening (Defense in Depth)
+The infrastructure implements a multi-layered security approach while  neutralizing threats.
 
-* **Grafana Alloy Agents:** Lightweight agents deployed using Ansible across all nodes. For telemetry purposes.
-* **Dynamic Tagging:** Ansible inserts tags (e.g DB) into the Alloy configuration for clean metric categorization.
-* **Data Streaming:** CPU, RAM, Memory, Network I/O and systemd journal logs are streamed to Grafana.
+* **Cryptography (A+ SSLLabs Rating):** All traffic is encrypted using Let's Encrypt certificates (automated with Ansible). The proxy enforces TLS 1.2/1.3, Mozilla's Intermediate cipher suites and HSTS preloading. Forward Secrecy is guaranteed by disabling session tickets.
+* **Traffic Blackholing (Stealth Mode):** Nginx strictly enforces an SNI-only policy. A 'black hole' block drops (`HTTP 444`) direct IP connections. This renders the server invisible to botnets. Additionally, `server_tokens` are disabled to prevent OS/version leakage.
+* **Dynamic IPS & Rate Limiting:** Nginx employs Token-Bucket rate limiting absorbing DDoS spikes. At the same time, a CrowdSec agent parses access logs actively dropping connections from malicious IPs using an Nginx Bouncer.
+* **Container Privilege De-escalation:** The Node.js application executes under an unprivileged user (`appuser`). Root access is explicitly dropped within the Dockerfile to mitigate Container Escape risks.
+* **API Route Hardening:** The Express.js backend implements strict Catch-All routing  returning standardized JSON 404 responses rather than leaking system information on undefined endpoints.
+
+
+##  Configuration Management & Idempotency
+OS configuration, K3s bootstrapping and cluster deployments are orchestrated using **Ansible** highly modular roles (`grafana_agent`, `nginx`, `internal_app`, `mysql_db`).
+
+* **Strict Idempotency:** Execution workflows ensure clean pushes before applying changes, making sure playbooks run without altering existing infrastructure.
+* **Declarative Deployments:** Used Ansible to dynamically template Kubernetes YAML manifests and for role deployment.
+* **Dynamic State Injection:** No secrets exist in the repo. Ansible securely extracts IPs (from terraform) and Vault credentials. Then inserts them into K8s Pod variables and configurations using Jinja2 templating.
+* **Zero-Trust Provisioning:** Ansible utilizes an SSH key `ProxyCommand` via the Nginx Bastion host to configure the private servers securely.
+
+
+##  CI/CD Pipelines & Automation
+The End-to-End lifecycle relies on three distinct GitHub Actions workflows:
+
+1. **Linting & Code Quality Pipeline (`lint.yml`):** Triggers on all Pull Requests and commits. It executes `yamllint` across all Ansible playbooks, Kubernetes manifests and GitHub workflows. It enforces syntax correctness, indentation standards and best practices for any code changes.
+2. **Docker Build Pipeline (`docker-build.yml`):** Automatically triggers on application code changes. It builds and pushes the Alpine-based Docker image to the GitHub Container Registry (GHCR).
+3. **Infrastructure Pipeline (`ci-cd.yml`):** Enforces CI/CD separation  for the cloud environment.
+   * **Shift-Left Security:** Integrates `tfsec` as a hard-fail SAST tool, preventing insecure Terraform configurations from advancing.
+   * **Sequential Execution:** The CD phase (Ansible/Terraform apply) executes only if the CI phase passes. THis prevents broken code from reaching production.
+   * **OPSEC Log Masking:** Live IP extraction and automated masking prevent leaks in GitHub Action logs.
+
+
+##  Observability & Telemetry
+The infrastructure is monitored to prevent resource exhaustion and provide detailed insights.
+
+* **Grafana Alloy Agents:** Lightweight agents deployed via Ansible across all nodes for telemetry data collection.
+* **Dynamic Tagging:** Ansible inserts tags (e.g., `role: db`) into the Alloy configuration for metric categorization.
+* **Data Streaming:** Live CPU, RAM, Network I/O and `systemd` journal logs are streamed to Grafana Cloud.
+
 
 <img width="1920" height="1586" alt="AWSec-grafana" src="https://github.com/user-attachments/assets/2819433e-b171-4e90-8f50-3e958a9ce1dc" />
 
 
-## Configuration Management & Orchestration
-OS configuration, K3s bootstrapping and cluster deployments, handled by **Ansible**. Structured in idempotent modular roles:
-(`grafana_agent`, `nginx`, `internal_app`, `mysql_db`)
-
-* **Declarative K8s Manifests:** Replaces legacy imperative deployments. Ansible dynamically templates Kubernetes YAML files (`app-manifests.yml`).
-* **Dynamic State Injection:** No secrets are stored in the repo. Ansible extracts Terraform state (Private IPs) and Vault credentials. Then inserts them directly into the Kubernetes Pod Environment Variables during runtime.
-* **Zero-Trust SSH Tunneling:** Ansible utilizes an SSH `ProxyCommand` via the Nginx Bastion host to securely configure the private servers.
-## Dynamic Edge Security & Intrusion Prevention (IPS)
-The public-facing Bastion host is fortified against Layer 7 volumetric and targeted attacks.
-* **Traffic Shaping:** Nginx employs Token-Bucket rate limiting (`limit_req_zone`) handling sudden traffic spikes without delaying legitimate requests.
-* **Dynamic IPS (CrowdSec):** A locally deployed CrowdSec agent parses access and authentication logs. Paired with an Nginx Bouncer that actively drops connections from malicious IPs. Together they effectively shield the internal Kubernetes overlay network from unauthorized scans and brute-force attempts.
-
-##  Idempotency & Templating
-The Configuration adheres to strict idempotency standards. Execution workflows are engineered to evaluate the target state before applying changes. This ensures playbooks can run continuously without changing already configured infrastructure. Furthermore, hardcoded values have been entirely eliminated and are inserted dynamically at runtime using secure Jinja2 templating.
-
-
-## CI/CD Pipelines (GitHub Actions)
-The End-to-End lifecycle relies on two distinct pipelines separating concerns:
-
-1. **Docker Build Pipeline (`docker-build.yml`):** Automatically triggers on application code changes. It builds the Alpine-based Dockerfile. Pushes the image to the GitHub Container Registry (GHCR).
-2. **Infrastructure Pipeline (`ci-cd.yml`):** Enforces Continuous Integration (CI). Then it initiates Continuous Deployment (CD).
-   * **Static Application Security Testing (SAST):** Integrates `tfsec` as a hard-fail pipeline stopper. Enforcing secure HCL configurations.
-   * **Sequential Job Execution:** The CD phase requires the CI phase to pass. Thus preventing broken or insecure code from reaching production.
-   * **OPSEC Log Securing:** Live action IP extraction and masking prevent infrastructure leakage.
-
-
-## Local Testing & Cost Management
-For manual testing without triggering the pipelines. This repository includes a custom interactive wrapper script (`money_saver.sh`). Executing this script validates, formats and applies the Terraform configuration, followed by the `ansible-playbook` execution. It features built-in pauses allowing the user to safely verify the deployment. Afterward, it automatically triggers `terraform destroy` to eliminate AWS costs. User only needs to: First create the inventory/group_vars/all.yml file. Second insert all secrets needed. Then allow the script to run the ansible-playbook command.
+##  Local Testing & FinOps (Cost Management)
+For manual testing without triggering pipelines. This repository includes a custom interactive wrapper (`money_saver.sh`). Executing this script validates and applies Terraform configurations, followed by `ansible-playbook` execution. It features built-in pauses for deployment verification. Then it automatically triggers `terraform destroy` to eliminate idle AWS costs. 
+*Usage:* Only things needed by the user:
+1) Import ssh key to the ansible directory `./aws_homelab.pem`.
+2) Create vault password key in the ansible directory `./.vault_pass`
+3) Open and configure the .env file to your liking.
