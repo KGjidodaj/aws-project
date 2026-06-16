@@ -23,6 +23,9 @@
   ansible.builtin.template:
     src: "{{ playbook_dir }}/Kubernetes/manifests/app-manifests.yml"
     dest: /opt/k3s-manifests/app-manifests.yml
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: 5. Wait for Kubernetes to be ready
   ansible.builtin.command: k3s kubectl get nodes
@@ -38,4 +41,4 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml # in case of direcroty confusion for the amdinistator file
   register: internal_app_kubectl_output # saving the output
   # Checking if created or configured is in the output for idempotency of the task.
-  changed_when: "'created' in kubectl_output.stdout or 'configured' in internal_app_kubectl_output.stdout"
+  changed_when: "'created' in internal_app_kubectl_output.stdout or 'configured' in internal_app_kubectl_output.stdout"
