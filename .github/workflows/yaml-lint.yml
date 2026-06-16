@@ -2,7 +2,7 @@
 name: YAML Lint
 on:
   push:
-    paths: #both extensions
+    paths: # both extensions
       - '**/*.yml'
       - '**/*.yaml'
     pull_request:

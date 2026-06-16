@@ -24,7 +24,7 @@ jobs:
 
       - name: Terraform init and validate check
         working-directory: ./Terraform # for the command to work
-        run: terraform init -backend=false && terraform validate #without backend connection as no credentials have been given yet
+        run: terraform init -backend=false && terraform validate # without backend connection as no credentials have been given yet
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.3
@@ -43,7 +43,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          #Using the github secrets
+          # Using the github secrets
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
@@ -71,7 +71,7 @@ jobs:
           terraform apply --auto-approve > terr.log
 
       - name: Extract IPs and mask logs
-        #Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
+        # Masking the logs with ::add-mask:: and storing them in variables to be used in the next part of the code
         working-directory: ./Terraform
         run: |
           NGINX_IP=$(terraform output -raw nginx_public_ip)

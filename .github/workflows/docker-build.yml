@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write #so the image can be uploaded to GHCR
+      packages: write # so the image can be uploaded to GHCR
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -29,6 +29,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          context: ./Kubernetes/app-src #since the files needed are saved there
+          context: ./Kubernetes/app-src # since the files needed are saved there
           push: true
           tags: ghcr.io/kgjidodaj/awsec-node-app:latest

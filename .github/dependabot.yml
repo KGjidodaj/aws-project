@@ -1,11 +1,11 @@
 ---
 version: 2
 updates:
-  - package-ecosystem: "github-actions" #CI/CD pipelines
+  - package-ecosystem: "github-actions" # CI/CD pipelines
     directory: "/"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "docker" #dockerfile
+  - package-ecosystem: "docker" # dockerfile
     directory: "/"
     schedule:
       interval: "weekly"

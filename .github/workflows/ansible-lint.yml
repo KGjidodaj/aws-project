@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Creating dummy vault # Bypassing false ansible lint error
+        run: echo "dummy_pass" > .vault_pass
+
+
       - name: Running Ansible Lint
         uses: ansible/ansible-lint@v26
         with:
