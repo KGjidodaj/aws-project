@@ -3,20 +3,22 @@
   ansible.builtin.apt:
     name: nginx
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: 2. Replace default land page
   ansible.builtin.copy:
     src: index.html
     dest: /usr/share/nginx/html/index.html
-    #Supressing privilages for only root to be able to modify the file
+    # Supressing privilages for only root to be able to modify the file
     owner: root
     group: root
     mode: '0644'
 
 - name: 3. Add CrowdSec apt repo
-  ansible.builtin.shell: curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
-  args: #For idempotency reasons
+  ansible.builtin.shell: | # noqa command-instead-of-module
+    set -o pipefail
+    curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
+  args: # For idempotency reasons
     creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
 
 - name: 4. Fix crowdsec repo mismatch for Ubuntu 26.04, fallback to noble
@@ -31,7 +33,7 @@
   ansible.builtin.apt:
     name: crowdsec
     state: present
-    update_cache: yes #updating again since sources.list.d got modified
+    update_cache: true # updating again since sources.list.d got modified
 
 - name: 6. Installing crowdsec bouncers for nginx
   ansible.builtin.apt:
@@ -49,30 +51,30 @@
   notify:
     - Restart CrowdSec
 
-#Using the curl command to update the ip of the nginx instance.
-#The curl command only needs to run once as the nginx host has an EIP.
+# Using the curl command to update the ip of the nginx instance.
+# The curl command only needs to run once as the nginx host has an EIP.
 - name: 8. Checking if ssl certificates already exist
   ansible.builtin.stat:
     path: /etc/letsencrypt/live/{{ full_domain }}/fullchain.pem
-  register: ssl_cert
+  register: nginx_ssl_cert
 
 - name: 9. Setting up DuckDNS dynamic IP upload
-  ansible.builtin.shell: "curl -s 'https://www.duckdns.org/update?domains={{ domain }}&token={{ duckdns_token }}&ip='"
+  ansible.builtin.shell: "curl -s 'https://www.duckdns.org/update?domains={{ domain }}&token={{ duckdns_token }}&ip='" # noqa command-instead-of-module no-changed-when
 
 - name: 10. Stop Nginx to free port 80 for certbot
   ansible.builtin.systemd:
     name: nginx
     state: stopped
-  when: not ssl_cert.stat.exists
+  when: not nginx_ssl_cert.stat.exists
 
 - name: 11. Installing certbot
   ansible.builtin.apt:
     name: certbot
     state: present
 
-#Using (HTTP-01 Challenge) for an ssl certificate with certbot
+# Using (HTTP-01 Challenge) for an ssl certificate with certbot
 - name: 12. Requesting Let's Encrypt SSL certificate
   ansible.builtin.command: >
     certbot certonly --standalone -d {{ full_domain }} --non-interactive --agree-tos --no-eff-email -m {{ email }}
-  when: not ssl_cert.stat.exists
+  when: not nginx_ssl_cert.stat.exists
   notify: Restart Nginx

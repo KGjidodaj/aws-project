@@ -1,21 +1,23 @@
 ---
 # Using curl and piping the output to install k3s with args so it does not get installed everytime this is run if it exists.
 - name: 1. Install lightweight k3s
-  shell: curl -sfL https://get.k3s.io | sh -
+  ansible.builtin.shell: | # noqa command-instead-of-module
+    set -o pipefail
+    curl -sfL https://get.k3s.io | sh -
   args:
     creates: /usr/local/bin/k3s
 
 - name: 2. Ensure k3s service is running
-  systemd:
+  ansible.builtin.systemd:
     name: k3s
     state: started
-    enabled: yes
+    enabled: true
 
 - name: 3. Create directory for manifests
-  file:
+  ansible.builtin.file:
     path: /opt/k3s-manifests
     state: directory
-    mode: '0755' #configuring the directory to 0755 mode to allow for debugging of simple users but only root can modify
+    mode: '0755' # configuring the directory to 0755 mode to allow for debugging of simple users but only root can modify
 
 - name: 4. Template and upload manifests
   ansible.builtin.template:
@@ -23,17 +25,17 @@
     dest: /opt/k3s-manifests/app-manifests.yml
 
 - name: 5. Wait for Kubernetes to be ready
-  shell: k3s kubectl get nodes
-  register: nodes_ready
-  until: nodes_ready.rc == 0 # checking return code
+  ansible.builtin.command: k3s kubectl get nodes
+  register: internal_app_nodes_ready
+  until: internal_app_nodes_ready.rc == 0 # checking return code
   retries: 5
   delay: 10
   changed_when: false
 
 - name: 6. Apply kubernets manifests - deploy app and service
-  shell: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
+  ansible.builtin.file: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
   environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml #in case of direcroty confusion for the amdinistator file
-  register: kubectl_output #saving the output
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml # in case of direcroty confusion for the amdinistator file
+  register: internal_app_kubectl_output # saving the output
   # Checking if created or configured is in the output for idempotency of the task.
-  changed_when: "'created' in kubectl_output.stdout or 'configured' in kubectl_output.stdout"
+  changed_when: "'created' in kubectl_output.stdout or 'configured' in internal_app_kubectl_output.stdout"
