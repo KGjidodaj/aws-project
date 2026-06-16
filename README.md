@@ -6,13 +6,16 @@
 [![Gitleaks Scan](https://github.com/KGjidodaj/aws-project/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/gitleaks.yml)
 [![Ansible Lint](https://github.com/KGjidodaj/aws-project/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/ansible-lint.yml)
 [![Dependabot](https://badgen.net/github/dependabot/KGjidodaj/aws-project)](https://github.com/KGjidodaj/aws-project/network/updates)
+
+
+<img width="1412" height="576" alt="AWSec drawio" src="https://github.com/user-attachments/assets/8231f8a4-733d-48e3-aa5b-38343799f937" />
+
 [![Terraform Version](https://img.shields.io/badge/Terraform-1.15+-623CE4?logo=terraform)](https://www.terraform.io/)
 [![Ansible Automated](https://img.shields.io/badge/Ansible-Deployed-EE0000?logo=ansible)](https://www.ansible.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-K3s-326CE5?logo=kubernetes)](https://k3s.io/)
 [![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker)](https://github.com/features/packages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<img width="1412" height="576" alt="AWSec drawio" src="https://github.com/user-attachments/assets/8231f8a4-733d-48e3-aa5b-38343799f937" />
 
 ## Overview
 This repository deploys a custom AWS cloud infrastructure. It is built strictly on **Infrastructure as Code (IaC)**, automated **Configuration Management**, **Container Orchestration** and **DevSecOps** practices. The entire lifecycle is automated using GitHub Actions ensuring secure, immutable and declarative deployments.
@@ -49,7 +52,7 @@ OS configuration, K3s bootstrapping and cluster deployments are orchestrated usi
 ## CI/CD Pipelines & Automation
 The End-to-End lifecycle is orchestrated using GitHub Actions workflows. The architecture strictly enforces a separation of concerns:
 
-1. **Linting & Configuration Quality (`lint.yml`):** Triggers on all Pull Requests and commits. 
+1. **Linting & Configuration Quality (`lint.yml`):** Triggers on all Pull Requests and commits.
    * **Ansible-Lint:** Evaluates playbook structures. Enforces idempotency rules and declarative module usage.
    * **Yamllint:** Scans Kubernetes manifests and workflows to enforce syntax correctness and strict indentation.
 
