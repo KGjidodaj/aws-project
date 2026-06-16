@@ -25,4 +25,4 @@ jobs:
       - name: Running Ansible Lint
         uses: ansible/ansible-lint@v26
         with:
-          targets: "playbook.yml"
+          args: "site.yml"
