@@ -1,0 +1,35 @@
+---
+name: YAML Lint
+on:
+  push:
+    paths: #both extensions
+      - '**/*.yml'
+      - '**/*.yaml'
+    pull_request:
+      paths:
+        - '**/*.yml'
+        - '**/*.yaml'
+jobs:
+  lint:
+    name: YAML Files Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v6
+      - name: Run Yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              document-start: enable
+              truthy: disable
+              comments: disable
+              braces: enable
+              brackets: enable
+              colons: enable
+              commas: enable
+              indentation:
+                spaces: 2
+                indent-sequences: consistent
