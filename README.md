@@ -1,9 +1,11 @@
 # AWSec: Automated and Secured 3-Tier Architecture (IaC & CI/CD)
 
-[![Docker Image CI](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml)
-[![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/lint.yml)
 [![AWSec End-to-End Deployment (CI/CD)](https://github.com/KGjidodaj/aws-project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/ci-cd.yml)
-
+[![Docker Image CI](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/docker-build.yml)
+[![YAML Linter](https://github.com/KGjidodaj/aws-project/actions/workflows/yaml-lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/yaml-lint.yml)
+[![Gitleaks Scan](https://github.com/KGjidodaj/aws-project/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/gitleaks.yml)
+[![Ansible Lint](https://github.com/KGjidodaj/aws-project/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/KGjidodaj/aws-project/actions/workflows/ansible-lint.yml)
+[![Dependabot](https://badgen.net/github/dependabot/KGjidodaj/aws-project)](https://github.com/KGjidodaj/aws-project/network/updates)
 [![Terraform Version](https://img.shields.io/badge/Terraform-1.15+-623CE4?logo=terraform)](https://www.terraform.io/)
 [![Ansible Automated](https://img.shields.io/badge/Ansible-Deployed-EE0000?logo=ansible)](https://www.ansible.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-K3s-326CE5?logo=kubernetes)](https://k3s.io/)
@@ -44,15 +46,24 @@ OS configuration, K3s bootstrapping and cluster deployments are orchestrated usi
 * **Zero-Trust Provisioning:** Ansible utilizes an SSH key `ProxyCommand` via the Nginx Bastion host to configure the private servers securely.
 
 
-##  CI/CD Pipelines & Automation
-The End-to-End lifecycle relies on three distinct GitHub Actions workflows:
+## CI/CD Pipelines & Automation
+The End-to-End lifecycle is orchestrated using GitHub Actions workflows. The architecture strictly enforces a separation of concerns:
 
-1. **Linting & Code Quality Pipeline (`lint.yml`):** Triggers on all Pull Requests and commits. It executes `yamllint` across all Ansible playbooks, Kubernetes manifests and GitHub workflows. It enforces syntax correctness, indentation standards and best practices for any code changes.
-2. **Docker Build Pipeline (`docker-build.yml`):** Automatically triggers on application code changes. It builds and pushes the Alpine-based Docker image to the GitHub Container Registry (GHCR).
-3. **Infrastructure Pipeline (`ci-cd.yml`):** Enforces CI/CD separation  for the cloud environment.
-   * **Shift-Left Security:** Integrates `tfsec` as a hard-fail SAST tool, preventing insecure Terraform configurations from advancing.
-   * **Sequential Execution:** The CD phase (Ansible/Terraform apply) executes only if the CI phase passes. THis prevents broken code from reaching production.
-   * **OPSEC Log Masking:** Live IP extraction and automated masking prevent leaks in GitHub Action logs.
+1. **Linting & Configuration Quality (`lint.yml`):** Triggers on all Pull Requests and commits. 
+   * **Ansible-Lint:** Evaluates playbook structures. Enforces idempotency rules and declarative module usage.
+   * **Yamllint:** Scans Kubernetes manifests and workflows to enforce syntax correctness and strict indentation.
+
+2. **Secret Scanning & OPSEC (`gitleaks.yml`):** * Integrates **Gitleaks** to perform deep Git scans on every push. It acts as a hard-fail, preventing secrets from being exposed.
+
+3. **Dependency-Update Security (Dependabot):**
+   * Continuously monitors the `Dockerfile` for outdated base images, the Terraform configuration for deprecated AWS providers and GitHub Actions for vulnerable runner versions.
+
+4. **Docker Build Pipeline (`docker-build.yml`):** * Automatically triggers on application code changes. It builds the Alpine-based Node.js container image and pushes it to the GHCR.
+
+5. **Infrastructure Deployment Pipeline (`ci-cd.yml`):** Enforces CI/CD separation for the cloud environment.
+   * **Shift-Left SAST:** Integrates `tfsec` as a hard-fail mechanism, preventing insecure Terraform configurations (e.g., exposed Security Groups) from advancing.
+   * **Sequential Execution:** The CD phase (Terraform Apply / Ansible Provisioning) executes only if the CI phase passes.
+   * **Log Masking:** Live IP extraction and masking are used to prevent infrastructure configuration and routing structures leaks.
 
 
 ##  Observability & Telemetry
@@ -67,7 +78,7 @@ The infrastructure is monitored to prevent resource exhaustion and provide detai
 
 
 ##  Local Testing & FinOps (Cost Management)
-For manual testing without triggering pipelines. This repository includes a custom interactive wrapper (`money_saver.sh`). Executing this script validates and applies Terraform configurations, followed by `ansible-playbook` execution. It features built-in pauses for deployment verification. Then it automatically triggers `terraform destroy` to eliminate idle AWS costs. 
+For manual testing without triggering pipelines. This repository includes a custom interactive wrapper (`money_saver.sh`). Executing this script validates and applies Terraform configurations, followed by `ansible-playbook` execution. It features built-in pauses for deployment verification. Then it automatically triggers `terraform destroy` to eliminate idle AWS costs.
 *Usage:* Only things needed by the user:
 1) Import ssh key to the ansible directory `./aws_homelab.pem`.
 2) Create vault password key in the ansible directory `./.vault_pass`
