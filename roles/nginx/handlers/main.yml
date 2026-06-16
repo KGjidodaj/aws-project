@@ -3,10 +3,10 @@
   ansible.builtin.systemd:
     name: nginx
     state: restarted
-    enabled: yes
+    enabled: true
 
 - name: Restart CrowdSec
   ansible.builtin.systemd:
     name: crowdsec
     state: restarted
-    enabled: yes
+    enabled: true

@@ -3,10 +3,10 @@
   ansible.builtin.apt:
     name: python3-debian
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: 2. Adding the Grafana APT repository
-  ansible.builtin.deb822_repository: #using modern secure deb822_repo
+  ansible.builtin.deb822_repository: # using modern secure deb822_repo
     name: grafana
     types: deb
     uris: https://apt.grafana.com
@@ -14,16 +14,19 @@
     components: main
     signed_by: https://apt.grafana.com/gpg.key
     state: present
-    enabled: yes
+    enabled: true
 
 - name: 3. Installing Grafana Alloy
   ansible.builtin.apt:
     name: alloy
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: 4. Setting up the Configuration File
   ansible.builtin.template:
     src: config.alloy.j2
     dest: /etc/alloy/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
   notify: Restart Alloy

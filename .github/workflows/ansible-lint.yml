@@ -1,0 +1,28 @@
+---
+name: Ansible Lint
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  ansible-lint:
+    name: Code quality check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+      - name: Setting up python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Creating dummy vault # Bypassing false ansible lint error
+        run: echo "dummy_pass" > .vault_pass
+
+
+      - name: Running Ansible Lint
+        uses: ansible/ansible-lint@v26
+        with:
+          args: "site.yml"

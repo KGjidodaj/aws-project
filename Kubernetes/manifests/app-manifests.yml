@@ -1,5 +1,5 @@
 ---
-#Modified Boilerplate adapted from: gmnikhil/k8s-boilerplate/deployment.yaml
+# Modified Boilerplate adapted from: gmnikhil/k8s-boilerplate/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,22 +17,22 @@ spec:
         app: awsec-node-app
     spec:
       containers:
-      - name: awsec-node-container
-        image: ghcr.io/kgjidodaj/awsec-node-app:latest
-        imagePullPolicy: Always #for a pull to always happen since I am using latest version
-        ports:
-        - containerPort: 8080
-        env: #according to the app.js process.env
-        - name: DB_HOST
-          value: "{{ db_private_ip }}"
-        - name: DB_USER
-          value: "{{ db_user }}"
-        - name: DB_PASSWORD
-          value: "{{ db_root_password }}"
-        - name: DB_NAME
-          value: "{{ db_name }}"
+        - name: awsec-node-container
+          image: ghcr.io/kgjidodaj/awsec-node-app:latest
+          imagePullPolicy: Always # for a pull to always happen since I am using latest version
+          ports:
+            - containerPort: 8080
+          env: # according to the app.js process.env
+            - name: DB_HOST
+              value: "{{ db_private_ip }}"
+            - name: DB_USER
+              value: "{{ db_user }}"
+            - name: DB_PASSWORD
+              value: "{{ db_root_password }}"
+            - name: DB_NAME
+              value: "{{ db_name }}"
 ---
-#Modified Boilerplate adapted from: gmnikhil/k8s-boilerplate/basic-external_service.yaml
+# Modified Boilerplate adapted from: gmnikhil/k8s-boilerplate/basic-external_service.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -41,9 +41,9 @@ spec:
   selector:
     app: awsec-node-app
   type: NodePort
-  #Aligning nodeport as the port nginx sends traffic to according to the template.
+  # Aligning nodeport as the port nginx sends traffic to according to the template.
   ports:
-  - port: 80
-    targetPort: 8080
-    protocol: TCP
-    nodePort: 30000
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 30000
