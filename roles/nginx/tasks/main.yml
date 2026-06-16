@@ -59,7 +59,7 @@
   register: nginx_ssl_cert
 
 - name: 9. Setting up DuckDNS dynamic IP upload
-  ansible.builtin.shell: "curl -s 'https://www.duckdns.org/update?domains={{ domain }}&token={{ duckdns_token }}&ip='"
+  ansible.builtin.shell: "curl -s 'https://www.duckdns.org/update?domains={{ domain }}&token={{ duckdns_token }}&ip='" # noqa command-instead-of-module
   changed_when: false
 
 - name: 10. Stop Nginx to free port 80 for certbot
@@ -79,3 +79,4 @@
     certbot certonly --standalone -d {{ full_domain }} --non-interactive --agree-tos --no-eff-email -m {{ email }}
   when: not nginx_ssl_cert.stat.exists
   notify: Restart Nginx
+  changed_when: true
