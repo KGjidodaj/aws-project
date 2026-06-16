@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker" # dockerfile
-    directory: "/"
+    directory: "/Kubernetes/app-src"
     schedule:
       interval: "weekly"
   - package-ecosystem: "terraform"
