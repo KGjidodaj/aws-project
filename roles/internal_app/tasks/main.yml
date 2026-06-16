@@ -36,7 +36,7 @@
   changed_when: false
 
 - name: 6. Apply kubernets manifests - deploy app and service
-  ansible.builtin.file: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
+  ansible.builtin.command: k3s kubectl apply -f /opt/k3s-manifests/app-manifests.yml
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml # in case of direcroty confusion for the amdinistator file
   register: internal_app_kubectl_output # saving the output
