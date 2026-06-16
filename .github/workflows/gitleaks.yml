@@ -1,10 +1,11 @@
+---
 name: Gitleaks Scan
 on:
   push:
     # on both branches
-    branches: [ "main", "dev" ]
+    branches: ["main", "dev"]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: ["main", "dev"]
 jobs:
   scan:
     name: gitleaks
