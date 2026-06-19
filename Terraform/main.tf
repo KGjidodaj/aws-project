@@ -1,3 +1,5 @@
+#This is the main.tf defining my EC2 infrastructure connected to terraform.tf with the provider and s3 bucket configuration
+
 #Defining the VPC
 #tfsec:ignore:require-vpc-flow-logs-for-all-vpcs
 resource "aws_vpc" "main_network" {

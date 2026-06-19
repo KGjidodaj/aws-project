@@ -1,3 +1,4 @@
+#Outputting the nginx bastion public ip alongside the two EC2 private ips that are used in the inventory/groups_var/all.yml file for ansible
 output "nginx_public_ip" {
   description = "Getting the elastic ip of the nginx instance"
   value       = aws_eip.nginx_eip.public_ip
