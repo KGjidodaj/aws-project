@@ -29,7 +29,7 @@ fi
 
 echo -e "\nRunning terraform apply to apply any changes, might take a little time..."
 sleep 0.4
-read -r -p "Press enter to continue with terraform apply: " pause
+read -r -p "Press enter to continue with terraform apply: "
 echo ""
 
 if terraform apply --auto-approve; then

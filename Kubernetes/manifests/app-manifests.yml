@@ -7,6 +7,7 @@ metadata:
   labels:
     app: awsec-node-app
 spec:
+  # Using two replicas here but can be changed to anything needed, I just have t3.small instances
   replicas: 2
   selector:
     matchLabels:
@@ -22,6 +23,7 @@ spec:
           imagePullPolicy: Always # for a pull to always happen since I am using latest version
           ports:
             - containerPort: 8080
+          # The Jinja2 variables are taken from inventory/groups_var/all.yml
           env: # according to the app.js process.env
             - name: DB_HOST
               value: "{{ db_private_ip }}"
@@ -46,4 +48,4 @@ spec:
     - port: 80
       targetPort: 8080
       protocol: TCP
-      nodePort: 30000
+      nodePort: 30000 #same as configured in main.tf as node.js is accepting data from nginx
