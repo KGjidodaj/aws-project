@@ -8,7 +8,7 @@ jobs:
     name: Syntax and Security checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
@@ -38,7 +38,7 @@ jobs:
     needs: integration-checks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
