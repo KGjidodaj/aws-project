@@ -5,10 +5,10 @@ on:
     paths: # both extensions
       - '**/*.yml'
       - '**/*.yaml'
-    pull_request:
-      paths:
-        - '**/*.yml'
-        - '**/*.yaml'
+  pull_request:
+    paths:
+      - '**/*.yml'
+      - '**/*.yaml'
 jobs:
   lint:
     name: YAML Files Check

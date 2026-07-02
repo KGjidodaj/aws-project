@@ -16,11 +16,11 @@
     line: 'bind-address = 0.0.0.0' # Using 0.0.0.0 is fine in this project
   notify: Restart mysql
 
-- name: 4. Creating DB
+- name: 3. Creating DB
   ansible.builtin.command: mysql -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
   changed_when: false
 
-- name: 5. Creating user
+- name: 4. Creating user
   ansible.builtin.command: >
     mysql -e "CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED BY '{{ db_root_password }}';
     GRANT ALL PRIVILEGES ON {{ db_name }}.* TO '{{ db_user }}'@'%';
