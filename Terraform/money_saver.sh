@@ -8,6 +8,7 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color for the resets
 
+# Validating the code in case of errors that the user needs to fix.
 echo "Running terraform validate to check the code, might take a little time..."
 terraform validate
 
@@ -18,9 +19,9 @@ if [[ $answer == "yes" ]] || [[ $answer == "Yes" ]]; then
 
     echo -e "\nRunning the commands..."
 
+    # Formatting code and showing the plan to the user.
     echo "Running terraform fmt..."
     terraform fmt
-
     echo -e "Running terraform plan... \n(sleeping for 6 seconds at the end for a double check)"
     terraform plan
     sleep 6 #allowing the user to quickly read the plans
@@ -32,6 +33,7 @@ sleep 0.4
 read -r -p "Press enter to continue with terraform apply: "
 echo ""
 
+# Creating the infrastructure according to main.tf.
 if terraform apply --auto-approve; then
 
     echo -e "\n\n\n${GREEN}Terraform apply worked.--------------------${NC}"
@@ -82,6 +84,7 @@ EOF
     echo "Starting the teardown process with terraform destroy----------"
     sleep 0.5
 
+    # Destroying the built infrastructure.
     if terraform destroy --auto-approve; then
         echo -e "${GREEN}[+] Destroy command finished, billing stopped.${NC}"
     else
